@@ -1,9 +1,17 @@
 # Configure Rails Envinronment
 ENV["RAILS_ENV"] = "test"
 
+require 'cover_me'
+CoverMe.config do |c|
+  c.at_exit = Proc.new {}
+  c.file_pattern = /(#{c.project.root}\/app\/.+\.rb|#{c.project.root}\/lib\/.+\.rb)/ix
+end
+
 require File.expand_path("../dummy/config/environment.rb",  __FILE__)
 require "rails/test_help"
 require "rspec/rails"
+
+require "factory_girl"
 
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true
@@ -15,9 +23,6 @@ Rails.backtrace_cleaner.remove_silencers!
 require "capybara/rails"
 Capybara.default_driver   = :rack_test
 Capybara.default_selector = :css
-
-# Run any available migration
-ActiveRecord::Migrator.migrate File.expand_path("../dummy/db/migrate/", __FILE__)
 
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
