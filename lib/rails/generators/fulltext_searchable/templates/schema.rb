@@ -1,15 +1,15 @@
 ActiveRecord::Schema.define(:version => 0) do
 
     execute( <<SQL
-      CREATE TABLE fulltexts (
+      CREATE TABLE fulltext_indices (
         _id INT(11),
-        resource_type VARCHAR(255),
-        resource_id INT(11),
+        item_type VARCHAR(255),
+        item_id INT(11),
         text TEXT,
         _score FLOAT,
-        KEY(`resource_id`),
+        KEY(`item_id`),
         FULLTEXT INDEX (`text`) WITH PARSER mecab
-      ) ENGINE = groonga DEFAULT CHARSET utf8;
+      ) ENGINE = groonga COLLATE utf8_unicode_ci;
 SQL
     )
 

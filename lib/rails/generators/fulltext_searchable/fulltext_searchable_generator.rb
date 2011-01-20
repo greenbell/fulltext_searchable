@@ -35,7 +35,7 @@ class FulltextSearchableGenerator < Rails::Generators::Base
     tmp.close
 
     migration_template  File.expand_path(tmp.path),
-                        'db/migrate/create_fulltexts_table.rb'
+                        'db/migrate/create_fulltext_indices_table.rb'
     remove_file 'tmp/~migration_ready.rb'
   end
 
