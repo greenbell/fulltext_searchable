@@ -1,3 +1,10 @@
+GIT
+  remote: git://github.com/mislav/will_paginate.git
+  revision: b1a5beeec9f56ecbe3594fcdca76d92b6767ce50
+  branch: rails3
+  specs:
+    will_paginate (3.0.pre3)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -142,7 +149,8 @@ DEPENDENCIES
   factory_girl
   jeweler
   mysql2
-  rails (= 3.0.3)
+  rails (>= 3.0.0)
   rdoc (>= 3.0.0)
   rspec-rails (>= 2.0.0.beta)
   ruby-debug19
+  will_paginate!

@@ -8,6 +8,7 @@ require "action_mailer/railtie"
 
 Bundler.require
 require "fulltext_searchable"
+require "will_paginate"
 
 module Dummy
   class Application < Rails::Application

@@ -40,7 +40,7 @@ module FulltextSearchable
     # 各モデルにincludeされるモジュール
     #
     module InstanceMethods
-      #
+      ##
       # after_saveにフック。
       #
       def save_fulltext_index
@@ -50,6 +50,10 @@ module FulltextSearchable
         self.fulltext_index.text = fulltext_keywords
         self.fulltext_index.save
       end
+
+      ##
+      # レコードの内容を全文検索インデックス用に変換
+      #
       def fulltext_keywords
         text = FulltextSearchable.to_model_keyword(self.class.name)
         fulltext_columns.each do |column|

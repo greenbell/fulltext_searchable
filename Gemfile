@@ -1,6 +1,6 @@
 source "http://rubygems.org"
 
-gem "rails", "3.0.3"
+gem "rails", ">= 3.0.0"
 gem "mysql2"
 
 group :development do
@@ -16,5 +16,6 @@ group :development do
   else
     gem "ruby-debug"
   end
+  gem 'will_paginate',           :git => 'git://github.com/mislav/will_paginate.git', :branch => 'rails3'
 end
 
