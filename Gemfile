@@ -11,6 +11,7 @@ group :development do
   gem "jeweler"
   gem "capybara"
   gem "rdoc", ">= 3.0.0"
+  gem "database_cleaner"
   if RUBY_VERSION >= '1.9'
     gem "ruby-debug19"
   else

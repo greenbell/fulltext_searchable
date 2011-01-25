@@ -16,16 +16,7 @@ namespace :fulltext_searchable do
       require file
     end
 
-    FulltextIndex.connection.execute("TRUNCATE `#{FulltextIndex.table_name}`")
-    puts "FulltextIndex flushed."
-    
-    ActiveRecord::Base.descendants.each do |model|
-      next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::InstanceMethods)
-      puts "Indexing model #{model.name}."
-      model.all.each do |r|
-        FulltextIndex.create :text => r.fulltext_keywords
-      end
-    end
+    FulltextIndex.rebuild_all
     puts "Done."
   end
 end

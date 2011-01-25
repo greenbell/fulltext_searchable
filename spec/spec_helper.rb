@@ -35,4 +35,12 @@ RSpec.configure do |config|
 
   # == Mock Framework
   config.mock_with :rspec
+#  config.fixture_path = "#{File.dirname(__FILE__)}/fixtures"
+#  config.global_fixtures = :all
+  require "database_cleaner"
+  config.before(:suite) do
+    DatabaseCleaner.app_root = "#{File.dirname(__FILE__)}/dummy/"
+    DatabaseCleaner.strategy = :truncation
+  end
+  config.before(:each){ DatabaseCleaner.clean }
 end

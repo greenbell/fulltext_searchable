@@ -12,7 +12,10 @@ module FulltextSearchable
 
   class << self
     def to_model_keyword(model)
-      '@' + Digest::MD5.hexdigest('FulltextSearchable_'+model.to_s)[0,8] + '@'
+      '' + Digest::MD5.hexdigest('FulltextSearchable_'+model.to_s)[0,9] + ''
+    end
+    def to_item_keyword(item)
+      '' + Digest::MD5.hexdigest('FulltextSearchable_'+item.class.to_s)[0,8] + '_' + item.id.to_s + ''
     end
   end
 

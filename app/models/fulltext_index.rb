@@ -35,7 +35,7 @@ class FulltextIndex < ActiveRecord::Base
       phrase.map!{|i| '+' + i }
       if options[:target]
         Array.wrap(options.delete(:target)).each do |i|
-          phrase.unshift('+' + FulltextSearchable.to_model_keyword(i.to_s))
+          phrase.unshift('+' + FulltextSearchable.to_model_keyword(i))
         end
       end
       where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
@@ -47,6 +47,27 @@ class FulltextIndex < ActiveRecord::Base
     #
     def items(*args)
       includes(:item).all(*args).map{|i| i.item }
+    end
+
+    def update(item)
+      self.match(FulltextSearchable.to_item_keyword(item)).includes(:item).all.each do |record|
+        next unless record.item
+        record.text = record.item.fulltext_keywords
+        record.save
+      end
+    end
+    ##
+    # 全文検索インデックスを再構築する。
+    #
+    def rebuild_all
+      delete_all
+
+      ActiveRecord::Base.descendants.each do |model|
+        next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::InstanceMethods)
+        model.all.each do |r|
+          create :text => r.fulltext_keywords, :item => r
+        end
+      end
     end
   end
 
