@@ -25,19 +25,43 @@ class FulltextIndex < ActiveRecord::Base
     #
     # ==== options
     # ===== target
-    # 検索対象にするモデルを指定する。
+    # 検索対象にするモデル、またはそのインスタンスを指定する。
     #
     def match(phrase, options={})
       options = options.symbolize_keys
       if phrase.is_a? String
         phrase = phrase.split(/[\s　]/)
       end
-      phrase.map!{|i| '+' + i }
+
+      # モデルで絞り込む
+      model_keywords = []
       if options[:target]
-        Array.wrap(options.delete(:target)).each do |i|
-          phrase.unshift(FulltextSearchable.to_model_keyword(i))
+        Array.wrap(options.delete(:target)).each do |t|
+          if t.is_a?(Class) && t.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+            model_keywords.push(FulltextSearchable.to_model_keyword(t))
+          end
         end
       end
+      # レコードで絞り込む
+      item_keywords = []
+      if options[:with]
+        Array.wrap(options.delete(:with)).each do |t|
+          if t.class.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+            item_keywords.push(FulltextSearchable.to_item_keyword(t))
+          end
+        end
+      end
+      [model_keywords, item_keywords].each do |keywords|
+        case keywords.count
+        when 0
+        when 1
+          phrase.unshift(keywords.first)
+        else
+          phrase.unshift("(#{keywords.join(' ')})")
+        end
+      end
+      phrase.map!{|i| '+' + i }
+
       where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
         order('`_score` DESC')
     end

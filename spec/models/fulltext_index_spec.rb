@@ -31,8 +31,8 @@ describe FulltextIndex do
       Factory.create(:soneki)
       Factory.create(:eigyo)
       Factory.create(:rieki)
-      Factory.create(:taro)
-      Factory.create(:jiro)
+      @taro = Factory.create(:taro)
+      @jiro = Factory.create(:jiro)
     end
     it "should fulltext searchable with '営業'" do
       FulltextIndex.match('営業').items.count.should == 4
@@ -60,6 +60,18 @@ describe FulltextIndex do
       FulltextIndex.match('太郎', :target => News).items.count.should == 0
       FulltextIndex.match('太郎', :target => [Blog, News]).items.count.should == 2
       FulltextIndex.match('太郎', :target => [Blog, News, User]).items.count.should == 3
+    end
+
+    it "should fulltext searchable with target item specified" do
+      FulltextIndex.match('天気').items.count.should == 5
+      FulltextIndex.match('天気', :with => @taro).items.count.should == 3
+    end
+
+    it "should fulltext searchable with target items and models specified" do
+      FulltextIndex.match('天気').items.count.should == 5
+      FulltextIndex.match('天気', :with => @taro, :target => Blog).items.count.should == 2
+      FulltextIndex.match('天気', :with => @taro, :target => [Blog, User]).items.count.should == 3
+      FulltextIndex.match('天気', :with => [@taro, @jiro], :target => Blog).items.count.should == 3
     end
   end
 end

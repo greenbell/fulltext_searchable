@@ -25,8 +25,10 @@ describe News do
     it "should return item" do
       FulltextIndex.match('決算').items.should == [@news]
     end
-    it "should be fulltext-searched" do
+    it "should be fulltext-searched with model restriction" do
       Factory.create(:day_after_tomorrow)
+      FulltextIndex.match('決算').items.count.should == 2
+      FulltextIndex.match('決算', :target => News).items.should == [@news]
       News.fulltext_match('決算').items.should == [@news]
     end
   end
