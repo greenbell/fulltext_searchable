@@ -17,6 +17,15 @@ describe News do
     end
   end
 
+  context "retrieval" do
+    before do
+      @news = Factory.create(:taisyaku)
+    end
+    it "should return item" do
+      FulltextIndex.match('営業年度').items.should == [@news]
+    end
+  end
+
   context "updating" do
     before do
       @news = Factory.create(:taisyaku)
@@ -28,6 +37,17 @@ describe News do
       @news.fulltext_index.reload.text.should ==
         "#{FulltextSearchable.to_model_keyword(News)} #{FulltextSearchable.to_item_keyword(@news)} 貸借対照表 営業年度の終了時、決算において資産、負債、資本がどれだけあるかを一定のルールにのっとって財務状態を表にした楽しいもの"
       FulltextIndex.match('営業年度 楽しい').items.should == [@news]
+    end
+  end
+
+  context "deletion" do
+    before do
+      @news = Factory.create(:taisyaku)
+    end
+    it "should destroy fulltext index" do
+      @news.destroy
+      @news.fulltext_index.reload.should be_nil
+      FulltextIndex.match('営業年度').items.should == []
     end
   end
 end

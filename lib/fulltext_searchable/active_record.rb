@@ -27,8 +27,13 @@ module FulltextSearchable
 
         self.fulltext_columns = Array.wrap(args)
 
+        condition = '#{FulltextIndex.create_key(self)}'
         class_eval <<-EOV
-        has_one :fulltext_index, :as => :item, :dependent => :destroy
+        has_one :fulltext_index, {
+          :as => :item,
+          :dependent => :destroy,
+          :conditions => ['`key` = ?', '#{condition}']
+        }
 
         include FulltextSearchable::ActiveRecord::InstanceMethods
 
@@ -47,10 +52,7 @@ module FulltextSearchable
         if self.fulltext_index
           FulltextIndex.update(self)
         else
-#          self.fulltext_index = FulltextIndex.new
-#          self.fulltext_index.text = fulltext_keywords
-#          self.fulltext_index.save
-          self.create_fulltext_index :text => fulltext_keywords
+          self.create_fulltext_index :key => FulltextIndex.create_key(self), :text => fulltext_keywords
         end
       end
 
@@ -71,7 +73,8 @@ module FulltextSearchable
         if target.is_a? Array
           target.each{|i| result.push(collect_fulltext_keywords(i, columns))}
         else
-          result = Array.wrap(FulltextSearchable.to_item_keyword(target))
+          result = []
+          result.push(FulltextSearchable.to_item_keyword(target)) unless strip_tags
           columns.each do |column|
             if column.is_a? Hash
               column.each do |k,v|

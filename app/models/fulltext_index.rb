@@ -65,9 +65,15 @@ class FulltextIndex < ActiveRecord::Base
       ActiveRecord::Base.descendants.each do |model|
         next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::InstanceMethods)
         model.all.each do |r|
-          create :text => r.fulltext_keywords, :item => r
+          create :key => create_key(r), :text => r.fulltext_keywords, :item => r
         end
       end
+    end
+    ##
+    # key用文字列を生成する。
+    #
+    def create_key(item)
+      "#{item.class.name}_#{item.id}"
     end
   end
 
