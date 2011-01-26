@@ -35,7 +35,7 @@ class FulltextIndex < ActiveRecord::Base
       phrase.map!{|i| '+' + i }
       if options[:target]
         Array.wrap(options.delete(:target)).each do |i|
-          phrase.unshift('+' + FulltextSearchable.to_model_keyword(i))
+          phrase.unshift(FulltextSearchable.to_model_keyword(i))
         end
       end
       where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
@@ -63,7 +63,7 @@ class FulltextIndex < ActiveRecord::Base
       delete_all
 
       ActiveRecord::Base.descendants.each do |model|
-        next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::InstanceMethods)
+        next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
         model.all.each do |r|
           create :key => create_key(r), :text => r.fulltext_keywords, :item => r
         end

@@ -29,7 +29,7 @@ describe Blog do
 
   context "updating" do
     before do
-      @blog = Factory.create(:today)
+      @blog = Factory.create(:taro).blogs.first
     end
 
     it "should update fulltext index" do

@@ -20,9 +20,14 @@ describe News do
   context "retrieval" do
     before do
       @news = Factory.create(:taisyaku)
+      Factory.create(:soneki)
     end
     it "should return item" do
-      FulltextIndex.match('営業年度').items.should == [@news]
+      FulltextIndex.match('決算').items.should == [@news]
+    end
+    it "should be fulltext-searched" do
+      Factory.create(:day_after_tomorrow)
+      News.fulltext_match('決算').items.should == [@news]
     end
   end
 
