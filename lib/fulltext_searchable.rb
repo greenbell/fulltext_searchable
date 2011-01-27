@@ -22,5 +22,7 @@ module FulltextSearchable
   autoload :ActiveRecord, 'fulltext_searchable/active_record'
 end
 
-ActiveRecord::Base.class_eval { include FulltextSearchable::ActiveRecord }
+ActiveSupport.on_load(:active_record) do
+  ActiveRecord::Base.class_eval { include FulltextSearchable::ActiveRecord }
+end
 
