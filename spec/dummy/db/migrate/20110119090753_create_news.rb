@@ -3,6 +3,7 @@ class CreateNews < ActiveRecord::Migration
     create_table :news do |t|
       t.string :title
       t.text :body
+      t.datetime :deleted_at
 
       t.timestamps
     end

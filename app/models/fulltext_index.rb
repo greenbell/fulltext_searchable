@@ -35,8 +35,8 @@ class FulltextIndex < ActiveRecord::Base
 
       # モデルで絞り込む
       model_keywords = []
-      if options[:target]
-        Array.wrap(options.delete(:target)).each do |t|
+      if options[:model]
+        Array.wrap(options.delete(:model)).each do |t|
           if t.is_a?(Class) && t.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
             model_keywords.push(FulltextSearchable.to_model_keyword(t))
           end
@@ -70,7 +70,8 @@ class FulltextIndex < ActiveRecord::Base
     # 結果を取得し、インデックス元モデルの配列に変換。
     #
     def items(*args)
-      includes(:item).all(*args).map{|i| i.item }
+      select('`_id`, `item_type`, `item_id`').
+        includes(:item).all(*args).map{|i| i.item }
     end
 
     def update(item)

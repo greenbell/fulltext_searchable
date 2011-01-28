@@ -28,7 +28,7 @@ describe News do
     it "should be fulltext-searched with model restriction" do
       Factory.create(:day_after_tomorrow)
       FulltextIndex.match('決算').items.count.should == 2
-      FulltextIndex.match('決算', :target => News).items.should == [@news]
+      FulltextIndex.match('決算', :model => News).items.should == [@news]
       News.fulltext_match('決算').items.should == [@news]
     end
   end
@@ -51,10 +51,38 @@ describe News do
     before do
       @news = Factory.create(:taisyaku)
     end
-    it "should destroy fulltext index" do
+    describe "with paranoid removal" do
+      it "should destroy fulltext index" do
+        @news.destroy
+        @news.destroyed?.should be_false
+        @news.reload.deleted_at.should_not be_nil
+        @news.fulltext_index.should be_nil
+        FulltextIndex.match('営業年度').items.should == []
+      end
+    end
+    describe "with real removal" do
+      it "should destroy fulltext index" do
+        @fulltext_index = @news.fulltext_index
+        @news.destroy!
+        @news.destroyed?.should be_true
+        FulltextIndex.find_by__id(@fulltext_index.id).should be_nil
+        FulltextIndex.match('営業年度').items.should == []
+      end
+    end
+  end
+
+  context "recovery" do
+    before do
+      @news = Factory.create(:taisyaku)
       @news.destroy
+    end
+    it "should rebuild fulltext index" do
       @news.fulltext_index.reload.should be_nil
-      FulltextIndex.match('営業年度').items.should == []
+      @news.recover
+      @news.deleted_at.should be_nil
+      @news.fulltext_index.reload.text.should ==
+        "#{FulltextSearchable.to_model_keyword(News)} #{FulltextSearchable.to_item_keyword(@news)} 貸借対照表 営業年度の終了時、決算において資産、負債、資本がどれだけあるかを一定のルールにのっとって財務状態を表にしたもの"
     end
   end
 end
+

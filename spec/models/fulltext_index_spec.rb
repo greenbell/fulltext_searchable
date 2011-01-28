@@ -57,9 +57,9 @@ describe FulltextIndex do
     end
 
     it "should fulltext searchable with target model specified" do
-      FulltextIndex.match('太郎', :target => News).items.count.should == 0
-      FulltextIndex.match('太郎', :target => [Blog, News]).items.count.should == 2
-      FulltextIndex.match('太郎', :target => [Blog, News, User]).items.count.should == 3
+      FulltextIndex.match('太郎', :model => News).items.count.should == 0
+      FulltextIndex.match('太郎', :model => [Blog, News]).items.count.should == 2
+      FulltextIndex.match('太郎', :model => [Blog, News, User]).items.count.should == 3
     end
 
     it "should fulltext searchable with target item specified" do
@@ -69,9 +69,10 @@ describe FulltextIndex do
 
     it "should fulltext searchable with target items and models specified" do
       FulltextIndex.match('天気').items.count.should == 5
-      FulltextIndex.match('天気', :with => @taro, :target => Blog).items.count.should == 2
-      FulltextIndex.match('天気', :with => @taro, :target => [Blog, User]).items.count.should == 3
-      FulltextIndex.match('天気', :with => [@taro, @jiro], :target => Blog).items.count.should == 3
+      FulltextIndex.match('天気', :with => @jiro, :model => Blog).items.count.should == 1
+      FulltextIndex.match('天気', :with => @jiro, :model => [Blog, User]).items.count.should == 2
+      FulltextIndex.match('天気', :with => [@taro, @jiro], :model => Blog).items.count.should == 3
+      FulltextIndex.match('天気', :with => [@taro, @jiro], :model => [Blog, User]).items.count.should == 5
     end
   end
 
@@ -87,7 +88,7 @@ describe FulltextIndex do
       (get_mysql_status_var('groonga_fast_order_limit').to_i - fast.to_i).should == 1
     end
 
-    # FIXME: count_skipを実行した後はfast_order_limitのカウントが上がらなくなってしまう
+    # TODO: count_skipを実行した後はfast_order_limitのカウントが上がらなくなってしまうのをなんとかする
     it "should utilize both of optization with pagination" do
       fast = get_mysql_status_var('groonga_fast_order_limit')
       skip = get_mysql_status_var('groonga_count_skip')

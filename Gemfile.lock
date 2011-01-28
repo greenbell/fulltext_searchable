@@ -5,6 +5,14 @@ GIT
   specs:
     will_paginate (3.0.pre3)
 
+GIT
+  remote: git://github.com/mshibuya/rails3_acts_as_paranoid.git
+  revision: 5578dc55cf5bf7aada93d551841e31ad0d44e801
+  ref: 5578dc5
+  specs:
+    rails3_acts_as_paranoid (0.0.2)
+      activerecord (>= 3.0)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -152,6 +160,7 @@ DEPENDENCIES
   jeweler
   mysql2
   rails (>= 3.0.0)
+  rails3_acts_as_paranoid!
   rdoc (>= 3.0.0)
   rspec-rails (>= 2.0.0.beta)
   ruby-debug19

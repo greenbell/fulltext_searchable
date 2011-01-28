@@ -9,6 +9,7 @@ require "action_mailer/railtie"
 Bundler.require
 require "fulltext_searchable"
 require "will_paginate"
+require "rails3_acts_as_paranoid"
 
 module Dummy
   class Application < Rails::Application

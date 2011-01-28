@@ -52,7 +52,7 @@ module FulltextSearchable
         # 各モデルに対し全文検索を行う。
         #
         def fulltext_match(phrase)
-          FulltextIndex.match(phrase, :target => self)
+          FulltextIndex.match(phrase, :model => self)
         end
       end
 
