@@ -54,6 +54,40 @@ module FulltextSearchable
         def fulltext_match(phrase)
           FulltextIndex.match(phrase, :model => self)
         end
+
+        def fulltext_dependent_models(columns=nil)
+          columns ||= fulltext_columns
+          if columns.is_a? Hash
+            columns = Array.wrap(columns)
+          end
+          if columns.is_a? Array
+            result = []
+            columns.flatten!
+            columns.each do |i|
+              if i.is_a?(Hash)
+                i.each do |k,v|
+                  if v.is_a?(Hash) || v.is_a?(Array)
+                    r = fulltext_dependent_models(v)
+                    if r
+                      result.push({k=>r})
+                    else
+                      result.push(k)
+                    end
+                  elsif v.to_s.downcase != 'html'
+                    result.push(k)
+                  end
+                end
+              end
+            end
+            if result.count == 1
+              result.first
+            else
+              result
+            end
+          else
+            nil
+          end
+        end
       end
 
       module InstanceMethods
@@ -72,40 +106,44 @@ module FulltextSearchable
         # レコードの内容を全文検索インデックス用に変換
         #
         def fulltext_keywords
-          arr_text = Array.wrap(FulltextSearchable.to_model_keyword(self.class.name))
-          arr_text.push(collect_fulltext_keywords(self, fulltext_columns))
-          arr_text.flatten.join(' ')
+          [
+            FulltextSearchable.to_model_keyword(self.class.name),
+            FulltextSearchable.to_item_keyword(self),
+          ].concat(collect_fulltext_keywords(self, fulltext_columns)).
+            flatten.join(' ')
         end
 
         protected
 
-        def collect_fulltext_keywords(target, columns, strip_tags=false)
+        def collect_fulltext_keywords(target, columns)
           result = []
           return result unless target
-          if target.is_a? Array
-            target.each{|i| result.push(collect_fulltext_keywords(i, columns))}
-          else
-            result = []
-            result.push(FulltextSearchable.to_item_keyword(target)) unless strip_tags
-            columns.each do |column|
-              if column.is_a? Hash
-                column.each do |k,v|
-                  if k.to_s.downcase == 'html' || k.to_s.downcase == 'html_columns'
-                    result.push(collect_fulltext_keywords(target, Array.wrap(v), true))
-                  else
-                    result.push(collect_fulltext_keywords(target.send(k), Array.wrap(v)))
+          if columns.is_a? Hash
+            columns = Array.wrap(columns)
+          end
+          unless columns.is_a? Array
+            return result.push(target.send(columns).to_s)
+          end
+          columns.flatten!
+          columns.each do |column|
+            if column.is_a? Hash
+              column.each do |k,v|
+                if v.to_s.downcase == 'html'
+                  result.push(target.send(k.to_s).to_s.gsub(/<[^>]*>/ui,''))
+                else
+                  Array.wrap(target.send(k)).each do |t|
+                    result.concat([
+                      FulltextSearchable.to_item_keyword(t),
+                      collect_fulltext_keywords(t, v)
+                    ])
                   end
                 end
-              else
-                if strip_tags
-                  result.push(target.send(column.to_s).to_s.gsub(/<[^>]*>/ui,''))
-                else
-                  result.push(target.send(column.to_s).to_s)
-                end
               end
+            else
+              result.push(collect_fulltext_keywords(target, column))
             end
           end
-          result
+          result.flatten
         end
       end
     end

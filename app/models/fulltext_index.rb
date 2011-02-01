@@ -89,9 +89,19 @@ class FulltextIndex < ActiveRecord::Base
 
       ActiveRecord::Base.descendants.each do |model|
         next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
-        model.all.each do |r|
-          create :key => create_key(r), :text => r.fulltext_keywords, :item => r
-        end
+        n = 0
+        depends = model.fulltext_dependent_models
+        begin
+          if depends.empty?
+            rows = model.offset(n).limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
+          else
+            rows = model.includes(depends).offset(n).limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
+          end
+          rows.each do |r|
+            create :key => create_key(r), :text => r.fulltext_keywords, :item => r
+          end
+          n += rows.count
+        end while rows.count >= FulltextSearchable::PROCESS_UNIT
       end
     end
     ##

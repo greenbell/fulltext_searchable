@@ -10,6 +10,8 @@ require 'digest/md5'
 module FulltextSearchable
   require 'fulltext_searchable/engine' if defined?(Rails)
 
+  PROCESS_UNIT = 1000
+
   class << self
     def to_model_keyword(model)
       '' + Digest::MD5.hexdigest('FulltextSearchable_'+model.to_s)[0,9] + ''
