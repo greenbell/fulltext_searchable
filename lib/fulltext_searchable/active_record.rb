@@ -37,7 +37,7 @@ module FulltextSearchable
 
         include FulltextSearchable::ActiveRecord::Behaviors
 
-        after_save       :save_fulltext_index
+        after_commit       :save_fulltext_index
         EOV
       end
     end
@@ -55,6 +55,9 @@ module FulltextSearchable
           FulltextIndex.match(phrase, :model => self)
         end
 
+        ##
+        # eager loadのために全文検索対応モデルが依存する他のモデルを返す。
+        #
         def fulltext_dependent_models(columns=nil)
           columns ||= fulltext_columns
           if columns.is_a? Hash
@@ -92,7 +95,7 @@ module FulltextSearchable
 
       module InstanceMethods
         ##
-        # after_saveにフック。
+        # after_commitにフック。
         #
         def save_fulltext_index
           if self.fulltext_index

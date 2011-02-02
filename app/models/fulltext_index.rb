@@ -98,7 +98,8 @@ class FulltextIndex < ActiveRecord::Base
             rows = model.includes(depends).offset(n).limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
           end
           rows.each do |r|
-            create :key => create_key(r), :text => r.fulltext_keywords, :item => r
+            index = self.find_or_initialize_by_key(create_key(r))
+            index.update_attributes :text => r.fulltext_keywords, :item => r
           end
           n += rows.count
         end while rows.count >= FulltextSearchable::PROCESS_UNIT

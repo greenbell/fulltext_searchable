@@ -10,6 +10,7 @@ require 'digest/md5'
 module FulltextSearchable
   require 'fulltext_searchable/engine' if defined?(Rails)
 
+  # 再構築タスク時の一回の処理レコード数
   PROCESS_UNIT = 1000
 
   class << self
