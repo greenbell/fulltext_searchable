@@ -9,6 +9,7 @@ ActiveRecord::Schema.define(:version => 0) do
         `text` TEXT,
         `_score` FLOAT,
         PRIMARY KEY(`key`),
+        UNIQUE INDEX(`_id`) USING HASH,
         FULLTEXT INDEX (`text`)
       ) ENGINE = groonga COLLATE utf8_unicode_ci;
 SQL

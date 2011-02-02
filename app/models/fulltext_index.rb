@@ -109,7 +109,7 @@ class FulltextIndex < ActiveRecord::Base
     # key用文字列を生成する。
     #
     def create_key(item)
-      "#{item.class.name}_#{item.id}"
+      "#{item.class.name}_#{'% 10d' % item.id}"
     end
   end
 
