@@ -132,7 +132,11 @@ module FulltextSearchable
             if column.is_a? Hash
               column.each do |k,v|
                 if v.to_s.downcase == 'html'
-                  result.push(target.send(k.to_s).to_s.gsub(/<[^>]*>/ui,''))
+                  result.push(
+                    HTMLEntities.decode_entities(
+                      target.send(k.to_s).to_s.gsub(/<[^>]*>/ui,'')
+                    ).gsub(/[ \s]+/u, ' ') # contains &nbsp;
+                  )
                 else
                   Array.wrap(target.send(k)).each do |t|
                     result.concat([

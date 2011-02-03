@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mitsuhiro Shibuya"]
-  s.date = %q{2011-01-19}
+  s.date = %q{2011-02-03}
   s.description = %q{Rails plugin for fulltext-search by mroonga}
   s.email = %q{shibuya@lavan7.co.jp}
   s.extra_rdoc_files = [
@@ -17,12 +17,14 @@ Gem::Specification.new do |s|
     "README.rdoc"
   ]
   s.files = [
-    "app/models/fulltext.rb",
+    "app/models/fulltext_index.rb",
     "lib/fulltext_searchable.rb",
+    "lib/fulltext_searchable/active_record.rb",
     "lib/fulltext_searchable/engine.rb",
     "lib/rails/generators/fulltext_searchable/fulltext_searchable_generator.rb",
     "lib/rails/generators/fulltext_searchable/templates/migration.rb",
-    "lib/rails/generators/fulltext_searchable/templates/schema.rb"
+    "lib/rails/generators/fulltext_searchable/templates/schema.rb",
+    "lib/tasks/fulltext_searchable.rake"
   ]
   s.homepage = %q{http://git.dev.ist-corp.jp/fulltext_searchable}
   s.licenses = ["MIT"]
@@ -31,13 +33,10 @@ Gem::Specification.new do |s|
   s.summary = %q{Rails plugin for fulltext-search by mroonga}
   s.test_files = [
     "spec/dummy/app/controllers/application_controller.rb",
-    "spec/dummy/app/controllers/blogs_controller.rb",
-    "spec/dummy/app/controllers/news_controller.rb",
     "spec/dummy/app/helpers/application_helper.rb",
-    "spec/dummy/app/helpers/blogs_helper.rb",
-    "spec/dummy/app/helpers/news_helper.rb",
     "spec/dummy/app/models/blog.rb",
     "spec/dummy/app/models/news.rb",
+    "spec/dummy/app/models/user.rb",
     "spec/dummy/config/application.rb",
     "spec/dummy/config/boot.rb",
     "spec/dummy/config/environment.rb",
@@ -50,12 +49,19 @@ Gem::Specification.new do |s|
     "spec/dummy/config/initializers/secret_token.rb",
     "spec/dummy/config/initializers/session_store.rb",
     "spec/dummy/config/routes.rb",
-    "spec/dummy/db/migrate/20110119084234_create_fulltexts_table.rb",
     "spec/dummy/db/migrate/20110119090740_create_blogs.rb",
     "spec/dummy/db/migrate/20110119090753_create_news.rb",
+    "spec/dummy/db/migrate/20110124031824_create_users.rb",
+    "spec/dummy/db/migrate/20110202091517_create_fulltext_indices_table.rb",
     "spec/fulltext_searchable_spec.rb",
     "spec/integration/navigation_spec.rb",
-    "spec/spec_helper.rb"
+    "spec/models/blog_spec.rb",
+    "spec/models/fulltext_index_spec.rb",
+    "spec/models/news_spec.rb",
+    "spec/spec_helper.rb",
+    "spec/support/factories/blogs.rb",
+    "spec/support/factories/news.rb",
+    "spec/support/factories/users.rb"
   ]
 
   if s.respond_to? :specification_version then
@@ -63,36 +69,51 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<rails>, ["= 3.0.3"])
+      s.add_runtime_dependency(%q<rails>, [">= 3.0.0"])
       s.add_runtime_dependency(%q<mysql2>, [">= 0"])
+      s.add_runtime_dependency(%q<htmlentities>, [">= 0"])
       s.add_development_dependency(%q<rspec-rails>, [">= 2.0.0.beta"])
       s.add_development_dependency(%q<factory_girl>, [">= 0"])
       s.add_development_dependency(%q<cover_me>, [">= 0"])
       s.add_development_dependency(%q<bundler>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
+      s.add_development_dependency(%q<capybara>, [">= 0"])
       s.add_development_dependency(%q<rdoc>, [">= 3.0.0"])
+      s.add_development_dependency(%q<database_cleaner>, [">= 0"])
       s.add_development_dependency(%q<ruby-debug19>, [">= 0"])
+      s.add_development_dependency(%q<will_paginate>, [">= 0"])
+      s.add_development_dependency(%q<rails3_acts_as_paranoid>, [">= 0"])
     else
-      s.add_dependency(%q<rails>, ["= 3.0.3"])
+      s.add_dependency(%q<rails>, [">= 3.0.0"])
       s.add_dependency(%q<mysql2>, [">= 0"])
+      s.add_dependency(%q<htmlentities>, [">= 0"])
       s.add_dependency(%q<rspec-rails>, [">= 2.0.0.beta"])
       s.add_dependency(%q<factory_girl>, [">= 0"])
       s.add_dependency(%q<cover_me>, [">= 0"])
       s.add_dependency(%q<bundler>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
+      s.add_dependency(%q<capybara>, [">= 0"])
       s.add_dependency(%q<rdoc>, [">= 3.0.0"])
+      s.add_dependency(%q<database_cleaner>, [">= 0"])
       s.add_dependency(%q<ruby-debug19>, [">= 0"])
+      s.add_dependency(%q<will_paginate>, [">= 0"])
+      s.add_dependency(%q<rails3_acts_as_paranoid>, [">= 0"])
     end
   else
-    s.add_dependency(%q<rails>, ["= 3.0.3"])
+    s.add_dependency(%q<rails>, [">= 3.0.0"])
     s.add_dependency(%q<mysql2>, [">= 0"])
+    s.add_dependency(%q<htmlentities>, [">= 0"])
     s.add_dependency(%q<rspec-rails>, [">= 2.0.0.beta"])
     s.add_dependency(%q<factory_girl>, [">= 0"])
     s.add_dependency(%q<cover_me>, [">= 0"])
     s.add_dependency(%q<bundler>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
+    s.add_dependency(%q<capybara>, [">= 0"])
     s.add_dependency(%q<rdoc>, [">= 3.0.0"])
+    s.add_dependency(%q<database_cleaner>, [">= 0"])
     s.add_dependency(%q<ruby-debug19>, [">= 0"])
+    s.add_dependency(%q<will_paginate>, [">= 0"])
+    s.add_dependency(%q<rails3_acts_as_paranoid>, [">= 0"])
   end
 end
 
