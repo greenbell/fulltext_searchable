@@ -37,7 +37,7 @@ class FulltextIndex < ActiveRecord::Base
       model_keywords = []
       if options[:model]
         Array.wrap(options.delete(:model)).each do |t|
-          if t.is_a?(Class) && t.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+          if t.is_a?(Class) && indexed?(t)
             model_keywords.push(FulltextSearchable.to_model_keyword(t))
           end
         end
@@ -46,7 +46,7 @@ class FulltextIndex < ActiveRecord::Base
       item_keywords = []
       if options[:with]
         Array.wrap(options.delete(:with)).each do |t|
-          if t.class.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+          if indexed?(t.class)
             item_keywords.push(FulltextSearchable.to_item_keyword(t))
           end
         end
@@ -73,12 +73,23 @@ class FulltextIndex < ActiveRecord::Base
       select('`_id`, `item_type`, `item_id`').
         includes(:item).all(*args).map{|i| i.item }
     end
-
+    ##
+    # 特定レコードの更新をインデックスに非同期で反映する。
+    #
     def update(item)
-      self.match(FulltextSearchable.to_item_keyword(item)).includes(:item).all.each do |record|
-        next unless record.item
-        record.text = record.item.fulltext_keywords
-        record.save
+      l = lambda do
+        self.match(FulltextSearchable.to_item_keyword(item)).
+          includes(:item).all.each do |record|
+          next unless record.item
+          record.text = record.item.fulltext_keywords
+          record.save
+          end
+      end
+      if FulltextSearchable::Engine.config.respond_to?(:async) &&
+        FulltextSearchable::Engine.config.async
+        Thread.new{ l.call }
+      else
+        l.call
       end
     end
     ##
@@ -88,15 +99,13 @@ class FulltextIndex < ActiveRecord::Base
       delete_all
 
       ActiveRecord::Base.descendants.each do |model|
-        next unless model.ancestors.include?(::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+        next unless model.table_exists? &&
+          model.fulltext_searchable?
         n = 0
         depends = model.fulltext_dependent_models
         begin
-          if depends.empty?
-            rows = model.offset(n).limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
-          else
-            rows = model.includes(depends).offset(n).limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
-          end
+          rows = model.includes(depends).offset(n).
+            limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
           rows.each do |r|
             index = self.find_or_initialize_by_key(create_key(r))
             index.update_attributes :text => r.fulltext_keywords, :item => r
@@ -110,6 +119,15 @@ class FulltextIndex < ActiveRecord::Base
     #
     def create_key(item)
       "#{item.class.name}_#{'% 10d' % item.id}"
+    end
+
+    protected
+
+    ##
+    # 全文検索対応モデルかどうかを判定し、返す。
+    #
+    def indexed?(klass)
+      klass.respond_to?(:fulltext_searchable?) && klass.fulltext_searchable?
     end
   end
 

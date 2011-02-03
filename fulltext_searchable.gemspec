@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
     "lib/fulltext_searchable/active_record.rb",
     "lib/fulltext_searchable/engine.rb",
     "lib/rails/generators/fulltext_searchable/fulltext_searchable_generator.rb",
+    "lib/rails/generators/fulltext_searchable/templates/initializer.rb",
     "lib/rails/generators/fulltext_searchable/templates/migration.rb",
     "lib/rails/generators/fulltext_searchable/templates/schema.rb",
     "lib/tasks/fulltext_searchable.rake"
@@ -44,6 +45,7 @@ Gem::Specification.new do |s|
     "spec/dummy/config/environments/production.rb",
     "spec/dummy/config/environments/test.rb",
     "spec/dummy/config/initializers/backtrace_silencers.rb",
+    "spec/dummy/config/initializers/fulltext_searchable.rb",
     "spec/dummy/config/initializers/inflections.rb",
     "spec/dummy/config/initializers/mime_types.rb",
     "spec/dummy/config/initializers/secret_token.rb",
@@ -74,6 +76,7 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<htmlentities>, [">= 0"])
       s.add_development_dependency(%q<rspec-rails>, [">= 2.0.0.beta"])
       s.add_development_dependency(%q<factory_girl>, [">= 0"])
+      s.add_development_dependency(%q<faker>, [">= 0"])
       s.add_development_dependency(%q<cover_me>, [">= 0"])
       s.add_development_dependency(%q<bundler>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
@@ -89,6 +92,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<htmlentities>, [">= 0"])
       s.add_dependency(%q<rspec-rails>, [">= 2.0.0.beta"])
       s.add_dependency(%q<factory_girl>, [">= 0"])
+      s.add_dependency(%q<faker>, [">= 0"])
       s.add_dependency(%q<cover_me>, [">= 0"])
       s.add_dependency(%q<bundler>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
@@ -105,6 +109,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<htmlentities>, [">= 0"])
     s.add_dependency(%q<rspec-rails>, [">= 2.0.0.beta"])
     s.add_dependency(%q<factory_girl>, [">= 0"])
+    s.add_dependency(%q<faker>, [">= 0"])
     s.add_dependency(%q<cover_me>, [">= 0"])
     s.add_dependency(%q<bundler>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])

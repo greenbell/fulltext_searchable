@@ -40,7 +40,7 @@ class FulltextSearchableGenerator < Rails::Generators::Base
   end
 
   def copy_initializer_file
-#    copy_file 'initializer.rb', 'config/initializers/fulltext_searchable.rb'
+    copy_file 'initializer.rb', 'config/initializers/fulltext_searchable.rb'
   end
 
 end

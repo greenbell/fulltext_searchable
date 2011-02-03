@@ -16,3 +16,4 @@ test:
   username: root
   password:
   database: fulltext_searchable_test
+  pool: 8

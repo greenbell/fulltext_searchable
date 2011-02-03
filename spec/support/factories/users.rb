@@ -14,3 +14,12 @@ Factory.define :hanako, :class => User do |f|
   f.name '花子'
 end
 
+Factory.define :john, :class => User do |f|
+  f.name 'john'
+  f.blogs {[ Factory(:yesterday) ]}
+end
+
+Factory.define :user do |f|
+  f.name 'test'
+  f.blogs {(1..10).map{ Factory(:blog) } }
+end

@@ -1,4 +1,5 @@
 # coding: utf-8
+require 'htmlentities'
 
 module FulltextSearchable
   ##
@@ -39,6 +40,13 @@ module FulltextSearchable
 
         after_commit       :save_fulltext_index
         EOV
+      end
+      ##
+      # 全文検索対応モデルかどうかを返す。
+      #
+      def fulltext_searchable?
+        self.ancestors.include?(
+          ::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
       end
     end
     #
@@ -82,7 +90,10 @@ module FulltextSearchable
                 end
               end
             end
-            if result.count == 1
+            case result.count
+            when 0
+              nil
+            when 1
               result.first
             else
               result

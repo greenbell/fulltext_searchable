@@ -12,6 +12,7 @@ require "rails/test_help"
 require "rspec/rails"
 
 require "factory_girl"
+require "faker"
 
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true

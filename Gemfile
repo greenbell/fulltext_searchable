@@ -7,6 +7,7 @@ gem "htmlentities"
 group :development do
   gem "rspec-rails", ">= 2.0.0.beta"
   gem "factory_girl"
+  gem "faker"
   gem "cover_me"
   gem "bundler"
   gem "jeweler"
