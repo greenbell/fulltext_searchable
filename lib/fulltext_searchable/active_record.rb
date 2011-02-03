@@ -23,10 +23,11 @@ module FulltextSearchable
       # ==== 例:
       #   fulltext_searchable :title, :body
       #
-      def fulltext_searchable(*args)
-        cattr_accessor  :fulltext_columns
+      def fulltext_searchable(*args, &block)
+        cattr_accessor  :fulltext_columns, :fulltext_keyword_proc
 
         self.fulltext_columns = Array.wrap(args)
+        self.fulltext_keyword_proc = block
 
         condition = '#{FulltextIndex.create_key(self)}'
         class_eval <<-EOV
@@ -112,7 +113,10 @@ module FulltextSearchable
           if self.fulltext_index
             FulltextIndex.update(self)
           else
-            self.create_fulltext_index :key => FulltextIndex.create_key(self), :text => fulltext_keywords
+            self.create_fulltext_index(
+              :key => FulltextIndex.create_key(self),
+              :text => fulltext_keywords
+            )
           end
         end
 
@@ -123,7 +127,8 @@ module FulltextSearchable
           [
             FulltextSearchable.to_model_keyword(self.class.name),
             FulltextSearchable.to_item_keyword(self),
-          ].concat(collect_fulltext_keywords(self, fulltext_columns)).
+          ].tap{|a| a.push(fulltext_keyword_proc.call) if fulltext_keyword_proc }.
+            concat(collect_fulltext_keywords(self, fulltext_columns)).
             flatten.join(' ')
         end
 
