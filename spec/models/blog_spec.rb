@@ -95,4 +95,25 @@ describe Blog do
       FulltextIndex.match('taro').count.should == @count
     end
   end
+
+  context "update optimization" do
+    before do
+      @user = Factory.create(:taro)
+      @blog = @user.blogs.first
+    end
+
+    it "should update related models with change of referenced attribute" do
+      @blog.title = @blog.title + 'foo'
+      FulltextIndex.should_receive(:update).with(@blog)
+      @blog.save
+    end
+
+    it "should not update related models with change of non-referenced attribute" do
+      @blog.body = @blog.body + 'foo'
+      FulltextIndex.should_not_receive(:update)
+      @blog.save
+      @blog.fulltext_index.reload.text.should ==
+        '392955b1b 392955b1_1 今日の天気は  曇り時々晴れです。foo 7d3ecc6a_1 太郎'
+    end
+  end
 end

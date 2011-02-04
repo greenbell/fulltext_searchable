@@ -24,7 +24,8 @@ module FulltextSearchable
       #   fulltext_searchable :title, :body
       #
       def fulltext_searchable(*args, &block)
-        cattr_accessor  :fulltext_columns, :fulltext_keyword_proc
+        cattr_accessor  :fulltext_columns,
+          :fulltext_keyword_proc, :fulltext_referenced_columns
 
         self.fulltext_columns = Array.wrap(args)
         self.fulltext_keyword_proc = block
@@ -48,6 +49,22 @@ module FulltextSearchable
       def fulltext_searchable?
         self.ancestors.include?(
           ::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+      end
+      ##
+      # 他モデルの全文検索インデックスから参照されているカラムを宣言する。
+      # この宣言をしておくと参照対象外のカラムの更新の際に無駄にインデックスの更新を走らせなくて済む。
+      #
+      def fulltext_referenced(*arg)
+        unless self.respond_to? :fulltext_referenced_columns
+          raise ::FulltextSearchable::NotEnabled
+        end
+        arg.each do |i|
+          raise ArgumentError if i.is_a? Hash
+        end
+        self.fulltext_referenced_columns = arg
+        class_eval <<-EOV
+        before_save       :check_fulltext_changes
+        EOV
       end
     end
     #
@@ -107,20 +124,6 @@ module FulltextSearchable
 
       module InstanceMethods
         ##
-        # after_commitにフック。
-        #
-        def save_fulltext_index
-          if self.fulltext_index
-            FulltextIndex.update(self)
-          else
-            self.create_fulltext_index(
-              :key => FulltextIndex.create_key(self),
-              :text => fulltext_keywords
-            )
-          end
-        end
-
-        ##
         # レコードの内容を全文検索インデックス用に変換
         #
         def fulltext_keywords
@@ -133,6 +136,33 @@ module FulltextSearchable
         end
 
         protected
+
+        ##
+        # after_commitにフック。
+        #
+        def save_fulltext_index
+          if self.fulltext_index
+            if !defined?(@fulltext_change) || @fulltext_change
+              FulltextIndex.update(self)
+            else
+              self.fulltext_index.text = fulltext_keywords
+              self.fulltext_index.save
+            end
+          else
+            self.create_fulltext_index(
+              :key => FulltextIndex.create_key(self),
+              :text => fulltext_keywords
+            )
+          end
+        end
+        ##
+        # before_saveにフック。全文検索対象カラムが変更されているかどうか調べる。
+        #
+        def check_fulltext_changes
+          @fulltext_change = fulltext_referenced_columns &&
+              fulltext_referenced_columns.any?{|i| changes[i]}
+          true
+        end
 
         def collect_fulltext_keywords(target, columns)
           result = []
