@@ -1,7 +1,6 @@
 # coding: utf-8
 $:.unshift(File.dirname(__FILE__))
 
-require 'active_record/base'
 require 'digest/md5'
 ##
 # == 概要
@@ -15,6 +14,7 @@ module FulltextSearchable
 
   # 再構築タスク時の一回の処理レコード数
   PROCESS_UNIT = 1000
+  TABLE_NAME = 'fulltext_indices'
 
   class << self
     def to_model_keyword(model)
@@ -30,5 +30,39 @@ end
 
 ActiveSupport.on_load(:active_record) do
   ActiveRecord::Base.class_eval { include FulltextSearchable::ActiveRecord }
-end
 
+  require 'active_record/connection_adapters/mysql2_adapter'
+  ActiveRecord::ConnectionAdapters::Mysql2Adapter.class_eval do
+    def create_fulltext_index_table
+      execute( <<SQL
+CREATE TABLE `#{::FulltextSearchable::TABLE_NAME}` (
+  `_id` INT(11),
+  `key` VARCHAR(32),
+  `item_type` VARCHAR(255),
+  `item_id` INT(11),
+  `text` TEXT,
+  `_score` FLOAT,
+  PRIMARY KEY(`key`),
+  UNIQUE INDEX(`_id`) USING HASH,
+  FULLTEXT INDEX (`text`)
+) ENGINE = groonga COLLATE utf8_unicode_ci;
+SQL
+      )
+    end
+  end
+
+  ActiveRecord::SchemaDumper.class_eval do
+    def table_with_grn(table, stream)
+      if table.to_s == ::FulltextSearchable::TABLE_NAME
+        tbl = StringIO.new
+        tbl.puts "  create_fulltext_index_table"
+        tbl.puts ""
+        tbl.rewind
+        stream.print tbl.read
+      else
+        table_without_grn(table, stream)
+      end
+    end
+    alias_method_chain :table, :grn
+  end
+end

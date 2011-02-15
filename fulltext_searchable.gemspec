@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{fulltext_searchable}
-  s.version = "0.0.0"
+  s.version = "0.0.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Mitsuhiro Shibuya"]
-  s.date = %q{2011-02-03}
+  s.date = %q{2011-02-15}
   s.description = %q{Rails plugin for fulltext-search by mroonga}
   s.email = %q{shibuya@lavan7.co.jp}
   s.extra_rdoc_files = [
@@ -36,7 +36,9 @@ Gem::Specification.new do |s|
     "spec/dummy/app/controllers/application_controller.rb",
     "spec/dummy/app/helpers/application_helper.rb",
     "spec/dummy/app/models/blog.rb",
+    "spec/dummy/app/models/comment.rb",
     "spec/dummy/app/models/news.rb",
+    "spec/dummy/app/models/reply.rb",
     "spec/dummy/app/models/user.rb",
     "spec/dummy/config/application.rb",
     "spec/dummy/config/boot.rb",
@@ -54,14 +56,17 @@ Gem::Specification.new do |s|
     "spec/dummy/db/migrate/20110119090740_create_blogs.rb",
     "spec/dummy/db/migrate/20110119090753_create_news.rb",
     "spec/dummy/db/migrate/20110124031824_create_users.rb",
-    "spec/dummy/db/migrate/20110202091517_create_fulltext_indices_table.rb",
+    "spec/dummy/db/migrate/20110203091209_create_comments.rb",
+    "spec/dummy/db/migrate/20110215091428_create_fulltext_indices_table.rb",
     "spec/fulltext_searchable_spec.rb",
     "spec/integration/navigation_spec.rb",
     "spec/models/blog_spec.rb",
+    "spec/models/comment_spec.rb",
     "spec/models/fulltext_index_spec.rb",
     "spec/models/news_spec.rb",
     "spec/spec_helper.rb",
     "spec/support/factories/blogs.rb",
+    "spec/support/factories/comments.rb",
     "spec/support/factories/news.rb",
     "spec/support/factories/users.rb"
   ]
