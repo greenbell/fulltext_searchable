@@ -10,6 +10,12 @@ describe Blog do
     Blog.superclass.should == ActiveRecord::Base
   end
 
+  it "should be checkd with changes" do
+    @blog = Blog.new
+    @blog.should_receive(:check_fulltext_changes)
+    @blog.save
+  end
+
   context "creation" do
     it "should create fulltext index" do
       FulltextIndex.match('お知らせ').items.should == []

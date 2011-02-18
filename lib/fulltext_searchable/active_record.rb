@@ -23,11 +23,14 @@ module FulltextSearchable
       # ==== 例:
       #   fulltext_searchable :title, :body
       #
-      def fulltext_searchable(*args, &block)
+      def fulltext_searchable(columns=[], options={}, &block)
+        options = options.symbolize_keys
         cattr_accessor  :fulltext_columns,
           :fulltext_keyword_proc, :fulltext_referenced_columns
 
-        self.fulltext_columns = Array.wrap(args)
+        referenced = options.delete(:referenced)
+        self.fulltext_columns = Array.wrap(columns)
+        self.fulltext_referenced_columns = Array.wrap(referenced) if referenced
         self.fulltext_keyword_proc = block
 
         condition = '#{FulltextIndex.create_key(self)}'
@@ -42,6 +45,11 @@ module FulltextSearchable
 
         after_commit       :save_fulltext_index
         EOV
+        if self.fulltext_referenced_columns
+          class_eval <<-EOV
+            before_save       :check_fulltext_changes
+          EOV
+        end
       end
       ##
       # 全文検索対応モデルかどうかを返す。
@@ -49,22 +57,6 @@ module FulltextSearchable
       def fulltext_searchable?
         self.ancestors.include?(
           ::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
-      end
-      ##
-      # 他モデルの全文検索インデックスから参照されているカラムを宣言する。
-      # この宣言をしておくと参照対象外のカラムの更新の際に無駄にインデックスの更新を走らせなくて済む。
-      #
-      def fulltext_referenced(*arg)
-        unless self.respond_to? :fulltext_referenced_columns
-          raise ::FulltextSearchable::NotEnabled
-        end
-        arg.each do |i|
-          raise ArgumentError if i.is_a? Hash
-        end
-        self.fulltext_referenced_columns = arg
-        class_eval <<-EOV
-        before_save       :check_fulltext_changes
-        EOV
       end
     end
     #

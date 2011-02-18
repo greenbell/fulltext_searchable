@@ -6,6 +6,12 @@ describe News do
     News.superclass.should == ActiveRecord::Base
   end
 
+  it "should not be checkd with changes" do
+    @news = News.new
+    @news.should_not_receive(:check_fulltext_changes)
+    @news.save
+  end
+
   context "creation" do
     it "should create fulltext index" do
       FulltextIndex.match('例 ダミー').items.should == []

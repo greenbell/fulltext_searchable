@@ -9,9 +9,6 @@ require 'digest/md5'
 module FulltextSearchable
   require 'fulltext_searchable/engine' if defined?(Rails)
 
-  # 被参照カラム宣言が先行した際に投げられる。
-  class NotEnabled < StandardError; end
-
   # 再構築タスク時の一回の処理レコード数
   PROCESS_UNIT = 1000
   TABLE_NAME = 'fulltext_indices'
