@@ -74,6 +74,10 @@ describe FulltextIndex do
       FulltextIndex.match('天気', :with => [@taro, @jiro], :model => Blog).items.count.should == 3
       FulltextIndex.match('天気', :with => [@taro, @jiro], :model => [Blog, User]).items.count.should == 5
     end
+    
+    it "should perform workaround with ActiveRecord's string-followed-by-period bug" do
+      FulltextIndex.match('ab.').items.should_not raise_error ActiveRecord::EagerLoadPolymorphicError
+    end
   end
 
   context "optimization" do

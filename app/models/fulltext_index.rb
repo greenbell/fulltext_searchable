@@ -71,8 +71,17 @@ class FulltextIndex < ActiveRecord::Base
     # 結果を取得し、インデックス元モデルの配列に変換。
     #
     def items(*args)
-      select('`_id`, `item_type`, `item_id`').
-        includes(:item).all(*args).map{|i| i.item }
+      begin
+        # ActiveRecordの参照テーブル判定処理がおかしいので、SQLクエリ内にピリオドが現れる際に
+        # ピリオドの前の文字列を参照テーブル名と誤認し、eager loadをjoinの方針に切り替えて
+        # polymorphic associationをjoinでeager loadできず例外を吐く。
+        # なのでrescueしてeager loadなしで再度クエリを試みておく。
+        select('`_id`, `item_type`, `item_id`').
+          includes(:item).all(*args).map{|i| i.item }
+      rescue ActiveRecord::EagerLoadPolymorphicError
+        # eager loadなしで試みる
+        select('`_id`, `item_type`, `item_id`').all(*args).map{|i| i.item }
+      end
     end
     ##
     # 特定レコードの更新をインデックスに非同期で反映する。
