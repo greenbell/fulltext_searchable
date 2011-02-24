@@ -25,8 +25,12 @@ class FulltextIndex < ActiveRecord::Base
     # 検索する単語。スペース区切りで複数指定。
     #
     # ==== options
-    # ===== target
-    # 検索対象にするモデル、またはそのインスタンスを指定する。
+    # ===== model
+    # 検索対象にするモデルを指定。
+    # 例: FulltextIndex.match('天気', :model => User)
+    # ===== with
+    # 検索対象にしたいレコード(AR object)を指定する。
+    # 例: FulltextIndex.match('天気', :with => @user)
     #
     def match(phrase, options={})
       options = options.symbolize_keys
