@@ -7,10 +7,9 @@ GIT
 
 GIT
   remote: git://github.com/mshibuya/rails3_acts_as_paranoid.git
-  revision: 5578dc55cf5bf7aada93d551841e31ad0d44e801
-  ref: 5578dc5
+  revision: fb2a9887b44243e15193554c9fde54ccf7f48ac1
   specs:
-    rails3_acts_as_paranoid (0.0.2)
+    rails3_acts_as_paranoid (0.0.4)
       activerecord (>= 3.0)
 
 GEM
@@ -44,7 +43,7 @@ GEM
       activesupport (= 3.0.3)
     activesupport (3.0.3)
     archive-tar-minitar (0.5.2)
-    arel (2.0.7)
+    arel (2.0.8)
     builder (2.1.2)
     capybara (0.4.1.1)
       celerity (>= 0.7.9)

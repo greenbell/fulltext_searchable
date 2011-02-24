@@ -21,6 +21,13 @@ describe News do
         "#{FulltextSearchable.to_model_keyword(News)} #{FulltextSearchable.to_item_keyword(@news)} 例 ダミー"
       FulltextIndex.match('例 ダミー').items.should == [@news]
     end
+
+    it "should not create fulltext index when soft-deleted initially" do
+      FulltextIndex.match('例 ダミー').items.should == []
+      @news = News.new :title => '例', :body => 'ダミー', :deleted_at => Time.now
+      @news.save
+      @news.fulltext_index.text.should == ''
+    end
   end
 
   context "retrieval" do
@@ -58,11 +65,12 @@ describe News do
       @news = Factory.create(:taisyaku)
     end
     describe "with paranoid removal" do
-      it "should destroy fulltext index" do
+      it "should nulify fulltext index" do
         @news.destroy
         @news.destroyed?.should be_false
         @news.reload.deleted_at.should_not be_nil
-        @news.fulltext_index.should be_nil
+        @news.fulltext_index.should_not be_nil
+        @news.fulltext_index.text.should == ''
         FulltextIndex.match('営業年度').items.should == []
       end
     end
@@ -83,7 +91,7 @@ describe News do
       @news.destroy
     end
     it "should rebuild fulltext index" do
-      @news.fulltext_index.reload.should be_nil
+      @news.fulltext_index.text.should == ''
       @news.recover
       @news.deleted_at.should be_nil
       @news.fulltext_index.reload.text.should ==

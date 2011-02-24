@@ -37,13 +37,13 @@ module FulltextSearchable
         class_eval <<-EOV
         has_one :fulltext_index, {
           :as => :item,
-          :dependent => :destroy,
           :conditions => ['`key` = ?', '#{condition}']
         }
 
         include FulltextSearchable::ActiveRecord::Behaviors
 
         after_commit       :save_fulltext_index
+        after_destroy      :destroy_fulltext_index
         EOV
         if self.fulltext_referenced_columns
           class_eval <<-EOV
@@ -119,22 +119,33 @@ module FulltextSearchable
         # レコードの内容を全文検索インデックス用に変換
         #
         def fulltext_keywords
+          # 論理削除されていたら空に
+          return '' if self.respond_to?(:deleted?) && self.deleted?
           [
             FulltextSearchable.to_model_keyword(self.class.name),
             FulltextSearchable.to_item_keyword(self),
-          ].tap{|a| a.push(fulltext_keyword_proc.call) if fulltext_keyword_proc }.
+          ].
+          tap{|a| a.push(fulltext_keyword_proc.call) if fulltext_keyword_proc }.
             concat(collect_fulltext_keywords(self, fulltext_columns)).
             flatten.join(' ')
         end
 
-        protected
+        private
 
+        ##
+        # before_saveにフック。全文検索対象カラムが変更されているかどうか調べる。
+        #
+        def check_fulltext_changes
+          @fulltext_change = fulltext_referenced_columns &&
+              fulltext_referenced_columns.any?{|i| changes[i]}
+          true
+        end
         ##
         # after_commitにフック。
         #
         def save_fulltext_index
           if self.fulltext_index
-            if !defined?(@fulltext_change) || @fulltext_change
+            if !fulltext_index.text.empty? && (!defined?(@fulltext_change) || @fulltext_change)
               FulltextIndex.update(self)
             else
               self.fulltext_index.text = fulltext_keywords
@@ -148,12 +159,14 @@ module FulltextSearchable
           end
         end
         ##
-        # before_saveにフック。全文検索対象カラムが変更されているかどうか調べる。
+        # after_destroyにフック。全文検索インデックスを削除
         #
-        def check_fulltext_changes
-          @fulltext_change = fulltext_referenced_columns &&
-              fulltext_referenced_columns.any?{|i| changes[i]}
-          true
+        def destroy_fulltext_index
+          if destroyed?
+            fulltext_index.destroy
+          else
+            fulltext_index.update_attributes(:text => '')
+          end
         end
 
         def collect_fulltext_keywords(target, columns)

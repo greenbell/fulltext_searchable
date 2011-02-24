@@ -118,7 +118,7 @@ class FulltextIndex < ActiveRecord::Base
         n = 0
         depends = model.fulltext_dependent_models
         begin
-          rows = model.includes(depends).offset(n).
+          rows = model.unscoped.includes(depends).offset(n).
             limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
           rows.each do |r|
             index = self.find_or_initialize_by_key(create_key(r))
