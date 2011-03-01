@@ -32,7 +32,7 @@ ActiveSupport.on_load(:active_record) do
   ActiveRecord::ConnectionAdapters::Mysql2Adapter.class_eval do
     def create_fulltext_index_table
       execute( <<SQL
-CREATE TABLE `#{::FulltextSearchable::TABLE_NAME}` (
+CREATE TABLE IF NOT EXISTS `#{::FulltextSearchable::TABLE_NAME}` (
   `_id` INT(11),
   `key` VARCHAR(32),
   `item_type` VARCHAR(255),
