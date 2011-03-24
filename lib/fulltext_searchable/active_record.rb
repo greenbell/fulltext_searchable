@@ -33,7 +33,6 @@ module FulltextSearchable
         self.fulltext_referenced_columns = Array.wrap(referenced) if referenced
         self.fulltext_keyword_proc = block
 
-        condition = '#{FulltextIndex.create_key(self)}'
         class_eval <<-EOV
         has_one :fulltext_index, {
           :as => :item,
@@ -162,6 +161,7 @@ module FulltextSearchable
         # after_destroyにフック。全文検索インデックスを削除
         #
         def destroy_fulltext_index
+          return unless fulltext_index
           if destroyed?
             fulltext_index.destroy
           else

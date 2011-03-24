@@ -83,6 +83,11 @@ describe Blog do
       @blog.fulltext_index.reload.should be_nil
       FulltextIndex.match('今日').items.should == []
     end
+
+    it "should not care fulltext index if not exists" do
+      FulltextIndex.delete_all
+      lambda{ @blog.destroy }.should_not raise_error
+    end
   end
 
   context "updating asynchronously" do
