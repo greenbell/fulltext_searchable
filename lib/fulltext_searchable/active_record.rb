@@ -37,7 +37,7 @@ module FulltextSearchable
         class_eval <<-EOV
         has_one :fulltext_index, {
           :as => :item,
-          :conditions => ['`key` = ?', '#{condition}']
+          :conditions => proc{ {:key => FulltextIndex.create_key(self) } }
         }
 
         include FulltextSearchable::ActiveRecord::Behaviors
