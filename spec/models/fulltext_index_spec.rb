@@ -9,7 +9,7 @@ describe FulltextIndex do
   context "rebuilding" do
     before do
       @taisyaku = Factory.create(:taisyaku)
-      @taisyaku.delete
+      News.delete_all! @taisyaku.id
       @soneki = Factory.create(:soneki)
       News.update_all("body = '夕飯はカレーです。'", ['id = ?',@soneki.id])
     end
@@ -101,7 +101,7 @@ describe FulltextIndex do
     it "should utilize both of optization with pagination" do
       fast = get_mysql_status_var('groonga_fast_order_limit')
       skip = get_mysql_status_var('groonga_count_skip')
-      FulltextIndex.match('天気').paginate(:finder=>:items, :per_page=>1, :page=>3)
+      FulltextIndex.match('天気').paginate(:per_page=>1, :page=>3).items
       (get_mysql_status_var('groonga_fast_order_limit').to_i - fast.to_i).should == 1
       (get_mysql_status_var('groonga_count_skip').to_i - skip.to_i).should == 1
     end

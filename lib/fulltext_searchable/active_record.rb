@@ -55,7 +55,7 @@ module FulltextSearchable
       #
       def fulltext_searchable?
         self.ancestors.include?(
-          ::FulltextSearchable::ActiveRecord::Behaviors::InstanceMethods)
+          ::FulltextSearchable::ActiveRecord::Behaviors)
       end
     end
     #
@@ -113,96 +113,94 @@ module FulltextSearchable
         end
       end
 
-      module InstanceMethods
-        ##
-        # レコードの内容を全文検索インデックス用に変換
-        #
-        def fulltext_keywords
-          # 論理削除されていたら空に
-          return '' if self.respond_to?(:deleted?) && self.deleted?
-          [
-            FulltextSearchable.to_model_keyword(self.class.name),
-            FulltextSearchable.to_item_keyword(self),
-          ].
-          tap{|a| a.push(fulltext_keyword_proc.call) if fulltext_keyword_proc }.
-            concat(collect_fulltext_keywords(self, fulltext_columns)).
-            flatten.join(' ')
-        end
+      ##
+      # レコードの内容を全文検索インデックス用に変換
+      #
+      def fulltext_keywords
+        # 論理削除されていたら空に
+        return '' if self.respond_to?(:deleted?) && self.deleted?
+        [
+          FulltextSearchable.to_model_keyword(self.class.name),
+          FulltextSearchable.to_item_keyword(self),
+        ].
+        tap{|a| a.push(fulltext_keyword_proc.call) if fulltext_keyword_proc }.
+          concat(collect_fulltext_keywords(self, fulltext_columns)).
+          flatten.join(' ')
+      end
 
-        private
+      private
 
-        ##
-        # before_saveにフック。全文検索対象カラムが変更されているかどうか調べる。
-        #
-        def check_fulltext_changes
-          @fulltext_change = fulltext_referenced_columns &&
-              fulltext_referenced_columns.any?{|i| changes[i]}
-          true
-        end
-        ##
-        # after_commitにフック。
-        #
-        def save_fulltext_index
-          if self.fulltext_index
-            if !fulltext_index.text.empty? && (!defined?(@fulltext_change) || @fulltext_change)
-              FulltextIndex.update(self)
-            else
-              self.fulltext_index.text = fulltext_keywords
-              self.fulltext_index.save
-            end
+      ##
+      # before_saveにフック。全文検索対象カラムが変更されているかどうか調べる。
+      #
+      def check_fulltext_changes
+        @fulltext_change = fulltext_referenced_columns &&
+            fulltext_referenced_columns.any?{|i| changes[i]}
+        true
+      end
+      ##
+      # after_commitにフック。
+      #
+      def save_fulltext_index
+        if self.fulltext_index
+          if !fulltext_index.text.empty? && (!defined?(@fulltext_change) || @fulltext_change)
+            FulltextIndex.update(self)
           else
-            self.create_fulltext_index(
-              :key => FulltextIndex.create_key(self),
-              :text => fulltext_keywords
-            )
+            self.fulltext_index.text = fulltext_keywords
+            self.fulltext_index.save
           end
+        else
+          self.create_fulltext_index(
+            :key => FulltextIndex.create_key(self),
+            :text => fulltext_keywords
+          )
         end
-        ##
-        # after_destroyにフック。全文検索インデックスを削除
-        #
-        def destroy_fulltext_index
-          return unless fulltext_index
-          if destroyed?
-            fulltext_index.destroy
-          else
-            fulltext_index.update_attributes(:text => '')
-          end
+      end
+      ##
+      # after_destroyにフック。全文検索インデックスを削除
+      #
+      def destroy_fulltext_index
+        return unless fulltext_index
+        if destroyed? && frozen?
+          fulltext_index.destroy
+        else
+          fulltext_index.update_attributes(:text => '')
         end
+      end
 
-        def collect_fulltext_keywords(target, columns)
-          result = []
-          return result unless target
-          if columns.is_a? Hash
-            columns = Array.wrap(columns)
-          end
-          unless columns.is_a? Array
-            return result.push(target.send(columns).to_s)
-          end
-          columns.flatten!
-          columns.each do |column|
-            if column.is_a? Hash
-              column.each do |k,v|
-                if v.to_s.downcase == 'html'
-                  result.push(
-                    HTMLEntities.decode_entities(
-                      target.send(k.to_s).to_s.gsub(/<[^>]*>/ui,'')
-                    ).gsub(/[ \s]+/u, ' ') # contains &nbsp;
-                  )
-                else
-                  Array.wrap(target.send(k)).each do |t|
-                    result.concat([
-                      FulltextSearchable.to_item_keyword(t),
-                      collect_fulltext_keywords(t, v)
-                    ])
-                  end
+      def collect_fulltext_keywords(target, columns)
+        result = []
+        return result unless target
+        if columns.is_a? Hash
+          columns = Array.wrap(columns)
+        end
+        unless columns.is_a? Array
+          return result.push(target.send(columns).to_s)
+        end
+        columns.flatten!
+        columns.each do |column|
+          if column.is_a? Hash
+            column.each do |k,v|
+              if v.to_s.downcase == 'html'
+                result.push(
+                  HTMLEntities.new(:xhtml1).decode(
+                    target.send(k.to_s).to_s.gsub(/<[^>]*>/ui,'')
+                  ).gsub(/[ \s]+/u, ' ') # contains &nbsp;
+                )
+              else
+                Array.wrap(target.send(k)).each do |t|
+                  result.concat([
+                    FulltextSearchable.to_item_keyword(t),
+                    collect_fulltext_keywords(t, v)
+                  ])
                 end
               end
-            else
-              result.push(collect_fulltext_keywords(target, column))
             end
+          else
+            result.push(collect_fulltext_keywords(target, column))
           end
-          result.flatten
         end
+        result.flatten
       end
     end
   end

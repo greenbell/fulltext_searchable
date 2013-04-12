@@ -24,8 +24,8 @@ describe News do
 
     it "should not create fulltext index when soft-deleted initially" do
       FulltextIndex.match('例 ダミー').items.should == []
-      @news = News.new :title => '例', :body => 'ダミー', :deleted_at => Time.now
-      @news.save
+      @news = News.create! :title => '例', :body => 'ダミー'
+      @news.destroy
       @news.fulltext_index.text.should == ''
     end
   end
@@ -67,7 +67,8 @@ describe News do
     describe "with paranoid removal" do
       it "should nulify fulltext index" do
         @news.destroy
-        @news.destroyed?.should be_false
+        @news.destroyed?.should be_true
+        @news.frozen?.should be_false
         @news.reload.deleted_at.should_not be_nil
         @news.fulltext_index.should_not be_nil
         @news.fulltext_index.text.should == ''

@@ -7,8 +7,8 @@ require 'digest/md5'
 # 全文検索インデックスとして機能するモデル。
 #
 class FulltextIndex < ActiveRecord::Base
-  set_table_name FulltextSearchable::TABLE_NAME
-  set_primary_key :_id
+  self.table_name = FulltextSearchable::TABLE_NAME
+  self.primary_key = :_id
   after_create :set_grn_insert_id
 
   ## :nodoc:

@@ -80,7 +80,7 @@ describe Blog do
 
     it "should destroy fulltext index" do
       @blog.destroy
-      @blog.fulltext_index.reload.should be_nil
+      lambda{ @blog.fulltext_index.reload }.should raise_error ActiveRecord::RecordNotFound
       FulltextIndex.match('今日').items.should == []
     end
 
