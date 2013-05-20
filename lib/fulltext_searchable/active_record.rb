@@ -161,7 +161,7 @@ module FulltextSearchable
       #
       def destroy_fulltext_index
         return unless fulltext_index
-        if destroyed? && frozen?
+        unless persisted?
           fulltext_index.destroy
         else
           fulltext_index.update_attributes(:text => '')

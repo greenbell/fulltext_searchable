@@ -67,8 +67,6 @@ describe News do
     describe "with paranoid removal" do
       it "should nulify fulltext index" do
         @news.destroy
-        @news.destroyed?.should be_true
-        @news.frozen?.should be_false
         @news.reload.deleted_at.should_not be_nil
         @news.fulltext_index.should_not be_nil
         @news.fulltext_index.text.should == ''
@@ -79,7 +77,6 @@ describe News do
       it "should destroy fulltext index" do
         @fulltext_index = @news.fulltext_index
         @news.destroy!
-        @news.destroyed?.should be_true
         FulltextIndex.find_by__id(@fulltext_index.id).should be_nil
         FulltextIndex.match('営業年度').items.should == []
       end
