@@ -42,9 +42,16 @@ CREATE TABLE IF NOT EXISTS `#{::FulltextSearchable::TABLE_NAME}` (
   PRIMARY KEY(`key`),
   UNIQUE INDEX(`_id`) USING HASH,
   FULLTEXT INDEX (`text`)
-) ENGINE = groonga COLLATE utf8_unicode_ci;
+) ENGINE = #{groonga_storage_engine_name} COLLATE utf8_unicode_ci;
 SQL
       )
+    end
+
+    private
+
+    def groonga_storage_engine_name
+      execute('SHOW ENGINES;').map(&:first).find{|name| name =~ /.+roonga/} or
+        raise "mroonga or groonga storage engine is not installed"
     end
   end
 
