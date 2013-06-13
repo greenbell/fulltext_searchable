@@ -8,9 +8,9 @@ describe FulltextIndex do
 
   context "rebuilding" do
     before do
-      @taisyaku = Factory.create(:taisyaku)
+      @taisyaku = FactoryGirl.create(:taisyaku)
       News.delete_all! @taisyaku.id
-      @soneki = Factory.create(:soneki)
+      @soneki = FactoryGirl.create(:soneki)
       News.update_all("body = '夕飯はカレーです。'", ['id = ?',@soneki.id])
     end
     it "should update fulltext index" do
@@ -27,12 +27,12 @@ describe FulltextIndex do
 
   context "retrieval" do
     before do
-      Factory.create(:taisyaku)
-      Factory.create(:soneki)
-      Factory.create(:eigyo)
-      Factory.create(:rieki)
-      @taro = Factory.create(:taro)
-      @jiro = Factory.create(:jiro)
+      FactoryGirl.create(:taisyaku)
+      FactoryGirl.create(:soneki)
+      FactoryGirl.create(:eigyo)
+      FactoryGirl.create(:rieki)
+      @taro = FactoryGirl.create(:taro)
+      @jiro = FactoryGirl.create(:jiro)
     end
     it "should fulltext searchable with '営業'" do
       FulltextIndex.match('営業').items.count.should == 4
@@ -82,9 +82,9 @@ describe FulltextIndex do
 
   context "optimization" do
     before do
-      @taro = Factory.create(:taro)
-      @jiro = Factory.create(:jiro)
-      Factory.create(:taisyaku)
+      @taro = FactoryGirl.create(:taro)
+      @jiro = FactoryGirl.create(:jiro)
+      FactoryGirl.create(:taisyaku)
     end
     it "should utilize groonga_fast_order_limit optization" do
       fast = get_mysql_status_var('groonga_fast_order_limit')

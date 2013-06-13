@@ -1,25 +1,27 @@
 # coding: utf-8
 
-Factory.define :taro, :class => User do |f|
-  f.name '太郎'
-  f.blogs {[ Factory(:today), Factory(:tomorrow) ]}
-end
+FactoryGirl.define do
+  factory :taro, :class => User do
+    name '太郎'
+    blogs {[ FactoryGirl.create(:today), FactoryGirl.create(:tomorrow) ]}
+  end
 
-Factory.define :jiro, :class => User do |f|
-  f.name '次郎'
-  f.blogs {[ Factory(:day_after_tomorrow) ]}
-end
+  factory :jiro, :class => User do
+    name '次郎'
+    blogs {[ FactoryGirl.create(:day_after_tomorrow) ]}
+  end
 
-Factory.define :hanako, :class => User do |f|
-  f.name '花子'
-end
+  factory :hanako, :class => User do
+    name '花子'
+  end
 
-Factory.define :john, :class => User do |f|
-  f.name 'john'
-  f.blogs {[ Factory(:yesterday) ]}
-end
+  factory :john, :class => User do
+    name 'john'
+    blogs {[ FactoryGirl.create(:yesterday) ]}
+  end
 
-Factory.define :user do |f|
-  f.name 'test'
-  f.blogs {(1..10).map{ Factory(:blog) } }
+  factory :user do
+    name 'test'
+    blogs {(1..10).map{ FactoryGirl.create(:blog) } }
+  end
 end

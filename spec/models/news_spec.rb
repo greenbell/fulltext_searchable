@@ -32,14 +32,14 @@ describe News do
 
   context "retrieval" do
     before do
-      @news = Factory.create(:taisyaku)
-      Factory.create(:soneki)
+      @news = FactoryGirl.create(:taisyaku)
+      FactoryGirl.create(:soneki)
     end
     it "should return item" do
       FulltextIndex.match('決算').items.should == [@news]
     end
     it "should be fulltext-searched with model restriction" do
-      Factory.create(:day_after_tomorrow)
+      FactoryGirl.create(:day_after_tomorrow)
       FulltextIndex.match('決算').items.count.should == 2
       FulltextIndex.match('決算', :model => News).items.should == [@news]
       News.fulltext_match('決算').items.should == [@news]
@@ -48,7 +48,7 @@ describe News do
 
   context "updating" do
     before do
-      @news = Factory.create(:taisyaku)
+      @news = FactoryGirl.create(:taisyaku)
     end
     it "should update fulltext index" do
       FulltextIndex.match('営業年度 楽しい').items.should == []
@@ -60,9 +60,9 @@ describe News do
     end
   end
 
-  context "deletion" do
+  context "deletion",f:true do
     before do
-      @news = Factory.create(:taisyaku)
+      @news = FactoryGirl.create(:taisyaku)
     end
     describe "with paranoid removal" do
       it "should nulify fulltext index" do
@@ -85,7 +85,7 @@ describe News do
 
   context "recovery" do
     before do
-      @news = Factory.create(:taisyaku)
+      @news = FactoryGirl.create(:taisyaku)
       @news.destroy
     end
     it "should rebuild fulltext index" do

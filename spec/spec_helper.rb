@@ -14,16 +14,13 @@ require "rspec/rails"
 require "factory_girl"
 require "faker"
 
+require "database_cleaner"
+
 ActionMailer::Base.delivery_method = :test
 ActionMailer::Base.perform_deliveries = true
 ActionMailer::Base.default_url_options[:host] = "test.com"
 
 Rails.backtrace_cleaner.remove_silencers!
-
-# Configure capybara for integration testing
-require "capybara/rails"
-Capybara.default_driver   = :rack_test
-Capybara.default_selector = :css
 
 # Load support files
 Dir["#{File.dirname(__FILE__)}/support/**/*.rb"].each { |f| require f }
@@ -36,9 +33,6 @@ RSpec.configure do |config|
 
   # == Mock Framework
   config.mock_with :rspec
-#  config.fixture_path = "#{File.dirname(__FILE__)}/fixtures"
-#  config.global_fixtures = :all
-  require "database_cleaner"
   config.before(:suite) do
     DatabaseCleaner.app_root = "#{File.dirname(__FILE__)}/dummy/"
     DatabaseCleaner.strategy = :truncation

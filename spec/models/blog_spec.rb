@@ -19,7 +19,7 @@ describe Blog do
   context "creation" do
     it "should create fulltext index" do
       FulltextIndex.match('お知らせ').items.should == []
-      @blog = Blog.new :title => '題名', :body => '<h1>お知らせ</h1>', :user => Factory.create(:hanako)
+      @blog = Blog.new :title => '題名', :body => '<h1>お知らせ</h1>', :user => FactoryGirl.create(:hanako)
       @blog.save
       @blog.fulltext_index.text.should ==
         "#{FulltextSearchable.to_model_keyword(Blog)} #{FulltextSearchable.to_item_keyword(@blog)} 題名 お知らせ #{FulltextSearchable.to_item_keyword(@blog.user)} 花子"
@@ -27,14 +27,14 @@ describe Blog do
     end
 
     it "should create fulltext index with deep nested models" do
-      @user = Factory.create(:john)
+      @user = FactoryGirl.create(:john)
       @user.fulltext_index.text.should == '7d3ecc6a9 7d3ecc6a_1 john 392955b1_1 昨日の天気は a69403a7_1 超寒い！！！１１<> 0e4e4340_1 1'
     end
   end
 
   context "retrieval" do
     before do
-      @blog = Factory.create(:today)
+      @blog = FactoryGirl.create(:today)
     end
 
     it "should return item" do
@@ -44,7 +44,7 @@ describe Blog do
 
   context "updating" do
     before do
-      @blog = Factory.create(:taro).blogs.first
+      @blog = FactoryGirl.create(:taro).blogs.first
     end
 
     it "should update fulltext index" do
@@ -75,7 +75,7 @@ describe Blog do
 
   context "deletion" do
     before do
-      @blog = Factory.create(:today)
+      @blog = FactoryGirl.create(:today)
     end
 
     it "should destroy fulltext index" do
@@ -94,7 +94,7 @@ describe Blog do
     before(:all) { FulltextSearchable::Engine.config.async = true }
     after(:all) { FulltextSearchable::Engine.config.async = false }
     before do
-      @user = Factory.create(:user)
+      @user = FactoryGirl.create(:user)
       @count = @user.blogs.count + 1
     end
 
@@ -109,7 +109,7 @@ describe Blog do
 
   context "update optimization" do
     before do
-      @user = Factory.create(:taro)
+      @user = FactoryGirl.create(:taro)
       @blog = @user.blogs.first
     end
 
