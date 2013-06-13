@@ -16,23 +16,8 @@ else
   end
 end
 
-gem "htmlentities"
-gem "fulltext_searchable", :path => './'
-
 group :development, :test do
-  gem "rspec-rails"
-  gem "factory_girl", "~> 1.3"
-  gem "faker"
-  gem "cover_me"
-  gem "bundler"
-  gem "jeweler"
-  gem "capybara"
-  gem "rdoc"
-  gem "database_cleaner"
-  if RUBY_VERSION >= '1.9'
-    gem "debugger"
-  else
-    gem "ruby-debug"
-  end
+  gem "debugger"
 end
 
+gemspec
