@@ -60,7 +60,7 @@ describe News do
     end
   end
 
-  context "deletion",f:true do
+  context "deletion" do
     before do
       @news = FactoryGirl.create(:taisyaku)
     end

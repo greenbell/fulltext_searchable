@@ -75,8 +75,13 @@ describe FulltextIndex do
       FulltextIndex.match('天気', :with => [@taro, @jiro], :model => [Blog, User]).items.count.should == 5
     end
     
-    it "should perform workaround with ActiveRecord's string-followed-by-period bug" do
+    it "should not break with ActiveRecord's eager loading behavior" do
       FulltextIndex.match('ab.').items.should_not raise_error ActiveRecord::EagerLoadPolymorphicError
+    end
+
+    it "should not contain nil in items" do
+      Blog.delete_all :id => @jiro.blogs.map(&:id)
+      FulltextIndex.match('天気').items.should_not include(nil)
     end
   end
 
