@@ -110,7 +110,10 @@ class FulltextIndex < ActiveRecord::Base
     # 全文検索インデックスを再構築する。
     #
     def rebuild_all
-      delete_all
+      if connection.tables.include?(FulltextSearchable::TABLE_NAME)
+        connection.drop_table FulltextSearchable::TABLE_NAME
+      end
+      connection.create_fulltext_index_table
 
       ActiveRecord::Base.descendants.each do |model|
         next unless model.table_exists? &&
