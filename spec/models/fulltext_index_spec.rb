@@ -87,27 +87,28 @@ describe FulltextIndex do
       FactoryGirl.create(:taisyaku)
     end
     it "should utilize groonga_fast_order_limit optization" do
-      fast = get_mysql_status_var('groonga_fast_order_limit')
+      fast = get_mroonga_status_var('fast_order_limit')
       FulltextIndex.match('天気').limit(1).all
-      (get_mysql_status_var('groonga_fast_order_limit').to_i - fast.to_i).should == 1
+      (get_mroonga_status_var('fast_order_limit') - fast).should == 1
     end
 
     it "should utilize groonga_count_skip optization" do
-      skip = get_mysql_status_var('groonga_count_skip')
+      skip = get_mroonga_status_var('count_skip')
       FulltextIndex.match('天気').count
-      (get_mysql_status_var('groonga_count_skip').to_i - skip.to_i).should == 1
+      (get_mroonga_status_var('count_skip') - skip).should == 1
     end
 
     it "should utilize both of optization with pagination" do
-      fast = get_mysql_status_var('groonga_fast_order_limit')
-      skip = get_mysql_status_var('groonga_count_skip')
-      FulltextIndex.match('天気').paginate(:per_page=>1, :page=>3).items
-      (get_mysql_status_var('groonga_fast_order_limit').to_i - fast.to_i).should == 1
-      (get_mysql_status_var('groonga_count_skip').to_i - skip.to_i).should == 1
+      fast = get_mroonga_status_var('fast_order_limit')
+      skip = get_mroonga_status_var('count_skip')
+      FulltextIndex.match('天気').paginate(:per_page=>1, :page=>3).to_a
+      (get_mroonga_status_var('fast_order_limit') - fast).should == 1
+      (get_mroonga_status_var('count_skip') - skip).should == 1
     end
 
-    def get_mysql_status_var(name)
-      ActiveRecord::Base.connection.execute("SHOW STATUS LIKE '#{name}';").first.last.to_i
+    def get_mroonga_status_var(name)
+      ActiveRecord::Base.connection.
+        execute("SHOW STATUS LIKE '#{ActiveRecord::Base.connection.mroonga_storage_engine_name}_#{name}';").first.last.to_i
     end
   end
 end

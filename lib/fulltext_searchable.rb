@@ -22,38 +22,16 @@ module FulltextSearchable
     end
   end
 
-  autoload :ActiveRecord, 'fulltext_searchable/active_record'
+  autoload :ActiveRecord,  'fulltext_searchable/active_record'
+  autoload :Mysql2Adapter, 'fulltext_searchable/mysql2_adapter'
 end
 
 ActiveSupport.on_load(:active_record) do
   ActiveRecord::Base.class_eval { include FulltextSearchable::ActiveRecord }
 
   require 'active_record/connection_adapters/mysql2_adapter'
-  ActiveRecord::ConnectionAdapters::Mysql2Adapter.class_eval do
-    def create_fulltext_index_table
-      execute( <<SQL
-CREATE TABLE IF NOT EXISTS `#{::FulltextSearchable::TABLE_NAME}` (
-  `_id` INT(11),
-  `key` VARCHAR(32),
-  `item_type` VARCHAR(255),
-  `item_id` INT(11),
-  `text` TEXT,
-  `_score` FLOAT,
-  PRIMARY KEY(`key`),
-  UNIQUE INDEX(`_id`) USING HASH,
-  FULLTEXT INDEX (`text`)
-) ENGINE = #{groonga_storage_engine_name} COLLATE utf8_unicode_ci;
-SQL
-      )
-    end
-
-    private
-
-    def groonga_storage_engine_name
-      execute('SHOW ENGINES;').map(&:first).find{|name| name =~ /.+roonga/} or
-        raise "mroonga or groonga storage engine is not installed"
-    end
-  end
+  ActiveRecord::ConnectionAdapters::Mysql2Adapter.
+    send(:include, FulltextSearchable::Mysql2Adapter)
 
   ActiveRecord::SchemaDumper.class_eval do
     def table_with_grn(table, stream)

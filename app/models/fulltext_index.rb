@@ -67,8 +67,13 @@ class FulltextIndex < ActiveRecord::Base
       end
       phrase.map!{|i| '+' + i }
 
-      where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
-        order('`_score` DESC')
+      if connection.mroonga_match_against?
+        where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
+          order(sanitize_sql_array(["MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')]))
+      else
+        where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
+          order('`_score` DESC')
+      end
     end
 
     ##
