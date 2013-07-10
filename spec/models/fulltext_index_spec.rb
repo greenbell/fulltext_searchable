@@ -76,12 +76,18 @@ describe FulltextIndex do
     end
     
     it "should not break with ActiveRecord's eager loading behavior" do
-      FulltextIndex.match('ab.').items.should_not raise_error ActiveRecord::EagerLoadPolymorphicError
+      expect{ FulltextIndex.match('ab.').items }.not_to raise_error
     end
 
     it "should not contain nil in items" do
       Blog.delete_all :id => @jiro.blogs.map(&:id)
       FulltextIndex.match('天気').items.should_not include(nil)
+    end
+
+    it "should not break when keywords with redundant speces are passed" do
+      FulltextIndex.match(' 営業 状態').items.count.should == 2
+      FulltextIndex.match('営業  状態').items.count.should == 2
+      FulltextIndex.match("　営業\t状態 ").items.count.should == 2
     end
   end
 
