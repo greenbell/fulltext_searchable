@@ -89,6 +89,14 @@ describe FulltextIndex do
       FulltextIndex.match('営業  状態').items.count.should == 2
       FulltextIndex.match("　営業\t状態 ").items.count.should == 2
     end
+
+    it "should ignore special characters and not break when meta characters are passed" do
+      "+-><()~*\"".split(//).each do |character|
+        FulltextIndex.match(character + '太郎', :model => User).items.count.should == 1
+      end
+      FulltextIndex.match('++太郎', :model => User).items.count.should == 1
+      FulltextIndex.match(['+太郎'], :model => User).items.count.should == 1
+    end
   end
 
   context "optimization" do

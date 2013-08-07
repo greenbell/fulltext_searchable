@@ -7,6 +7,7 @@ require 'digest/md5'
 # 全文検索インデックスとして機能するモデル。
 #
 class FulltextIndex < ActiveRecord::Base
+  BOOLEAN_META_CHARACTER_REGEXP = /^[\+\-><\(\)~*"]*/
   self.table_name = FulltextSearchable::TABLE_NAME
   self.primary_key = :_id
   after_create :set_grn_insert_id
@@ -37,6 +38,7 @@ class FulltextIndex < ActiveRecord::Base
       if phrase.is_a? String
         phrase = phrase.split(/[\s　]/).reject{|word| word.blank? }
       end
+      phrase.map!{|word| word.gsub(BOOLEAN_META_CHARACTER_REGEXP, '')}
 
       # モデルで絞り込む
       model_keywords = []
