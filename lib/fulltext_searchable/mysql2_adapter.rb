@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS `#{::FulltextSearchable::TABLE_NAME}` (
   #{"`_score` FLOAT," unless mroonga_match_against?}
   PRIMARY KEY(`key`),
   #{"UNIQUE " if mroonga_unique_hash_index_safe?}INDEX(`_id`) USING HASH,
-  FULLTEXT INDEX (`text`)
+  FULLTEXT INDEX (`text`) COMMENT 'parser "TokenBigramSplitSymbolAlpha"'
 ) ENGINE = #{mroonga_storage_engine_name} COLLATE utf8_unicode_ci;
 SQL
       )
@@ -53,7 +53,7 @@ SQL
       safe = true
       begin
         execute("TRUNCATE TABLE `#{temporary_table_name}`;")
-      rescue 
+      rescue
         safe = false
       end
       drop_table temporary_table_name
