@@ -31,8 +31,9 @@ describe FulltextIndex do
       FactoryGirl.create(:soneki)
       FactoryGirl.create(:eigyo)
       FactoryGirl.create(:rieki)
-      @taro = FactoryGirl.create(:taro)
-      @jiro = FactoryGirl.create(:jiro)
+      @taro   = FactoryGirl.create(:taro)
+      @jiro   = FactoryGirl.create(:jiro)
+      @hanako = FactoryGirl.create(:hanako, :name => 'hanako')
     end
     it "should fulltext searchable with '営業'" do
       FulltextIndex.match('営業').items.count.should == 4
@@ -74,7 +75,7 @@ describe FulltextIndex do
       FulltextIndex.match('天気', :with => [@taro, @jiro], :model => Blog).items.count.should == 3
       FulltextIndex.match('天気', :with => [@taro, @jiro], :model => [Blog, User]).items.count.should == 5
     end
-    
+
     it "should not break with ActiveRecord's eager loading behavior" do
       expect{ FulltextIndex.match('ab.').items }.not_to raise_error
     end
@@ -96,6 +97,12 @@ describe FulltextIndex do
       end
       FulltextIndex.match('++太郎', :model => User).items.count.should == 1
       FulltextIndex.match(['+太郎'], :model => User).items.count.should == 1
+    end
+
+    it "should fulltext searchable with one character of alphabet" do
+      FulltextIndex.match('h').items.count.should == 1
+      FulltextIndex.match('h', :model => User).items.count.should == 1
+      FulltextIndex.match('h', :model => User, :with => @hanako).items.count.should == 1
     end
   end
 
