@@ -14,10 +14,17 @@ namespace :fulltext_searchable do
   task :rebuild => :environment do
     puts "Rebuilding FulltextIndex..."
 
-    # read all models
+    # load all models
     require 'active_record'
-    Dir["#{Rails.root}/app/models/*"].each do |file|
-      require file if File::ftype(file) == "file"
+    base_path = "#{Rails.root}/app/models/"
+    Dir["#{base_path}**/*.rb"].map do |filename|
+      filename.gsub(base_path, '').chomp('.rb').camelize
+    end.flatten.reject { |m| m.starts_with?('Concerns::') }.each do |m|
+      begin
+        m.constantize
+      rescue LoadError
+        puts "Failed to load '#{m}'. Assuming non-existent.."
+      end
     end
 
     FulltextIndex.rebuild_all
