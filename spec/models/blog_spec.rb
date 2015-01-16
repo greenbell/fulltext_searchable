@@ -1,10 +1,6 @@
 # coding: utf-8
 require 'spec_helper'
 
-def thread_wait
-  Thread.list.each{|t| t.join if t != Thread.current }
-end
-
 describe Blog do
   it "should be valid" do
     Blog.superclass.should == ActiveRecord::Base
@@ -51,7 +47,7 @@ describe Blog do
       FulltextIndex.match('晴れ 雨').items.should == []
       @blog.body = '<DIV><FONT size="2">&nbsp;</FONT>曇り時々晴れでところにより一時にわか雨です。</DIV>'
       @blog.save
-      @blog.fulltext_index.reload.text.should ==
+      @blog.fulltext_index.text.should ==
         "#{FulltextSearchable.to_model_keyword(Blog)} #{FulltextSearchable.to_item_keyword(@blog)} 今日の天気は  曇り時々晴れでところにより一時にわか雨です。 #{FulltextSearchable.to_item_keyword(@blog.user)} 太郎"
       FulltextIndex.match('晴れ 雨').items.should == [@blog]
     end
@@ -60,14 +56,15 @@ describe Blog do
       FulltextIndex.match('晴れ 雨').items.should == []
       @blog.body = '<DIV><FONT size="2">&nbsp;曇り<a name="abc">時々晴れで<b>ところにより</FONT>一時超にわか雨</b>です。</DIV>'
       @blog.save
-      @blog.fulltext_index.reload.text.should ==
+      @blog.fulltext_index.text.should ==
         "#{FulltextSearchable.to_model_keyword(Blog)} #{FulltextSearchable.to_item_keyword(@blog)} 今日の天気は  曇り時々晴れでところにより一時超にわか雨です。 #{FulltextSearchable.to_item_keyword(@blog.user)} 太郎"
       FulltextIndex.match('晴れ 雨').items.should == [@blog]
     end
 
     it "should also update fulltext index with update of associated model" do
       @blog.user.update_attributes :name => '東京太郎'
-      @blog.fulltext_index.reload.text.should ==
+      @blog.reload
+      @blog.fulltext_index.text.should ==
         "#{FulltextSearchable.to_model_keyword(Blog)} #{FulltextSearchable.to_item_keyword(@blog)} 今日の天気は  曇り時々晴れです。 #{FulltextSearchable.to_item_keyword(@blog.user)} 東京太郎"
       FulltextIndex.match('晴れ 東京').items.should == [@blog]
     end
@@ -89,23 +86,6 @@ describe Blog do
     it "should not care fulltext index if not exists" do
       FulltextIndex.delete_all
       lambda{ @blog.destroy }.should_not raise_error
-    end
-  end
-
-  context "updating asynchronously" do
-    before(:all) { FulltextSearchable::Engine.config.async = true }
-    after(:all) { FulltextSearchable::Engine.config.async = false }
-    before do
-      @user = FactoryGirl.create(:user)
-      @count = @user.blogs.count + 1
-    end
-
-    it "should update fulltext index" do
-      @user.name = 'taro'
-      @user.save
-      FulltextIndex.match('taro').count.should_not == @count
-      thread_wait
-      FulltextIndex.match('taro').count.should == @count
     end
   end
 

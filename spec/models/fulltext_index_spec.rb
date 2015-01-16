@@ -11,7 +11,7 @@ describe FulltextIndex do
       @taisyaku = FactoryGirl.create(:taisyaku)
       News.delete_all! @taisyaku.id
       @soneki = FactoryGirl.create(:soneki)
-      News.update_all("body = '夕飯はカレーです。'", ['id = ?',@soneki.id])
+      News.where('id = ?',@soneki.id).update_all("body = '夕飯はカレーです。'")
     end
     it "should update fulltext index" do
       FulltextIndex.all.map{|i| i.text}.should == [
@@ -114,7 +114,7 @@ describe FulltextIndex do
     end
     it "should utilize groonga_fast_order_limit optization" do
       fast = get_mroonga_status_var('fast_order_limit')
-      FulltextIndex.match('天気').limit(1).all
+      FulltextIndex.match('天気').limit(1).all.to_a
       (get_mroonga_status_var('fast_order_limit') - fast).should == 1
     end
 

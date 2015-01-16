@@ -1,12 +1,6 @@
 # Configure Rails Envinronment
 ENV["RAILS_ENV"] = "test"
 
-require 'cover_me'
-CoverMe.config do |c|
-  c.at_exit = Proc.new {}
-  c.file_pattern = /(#{c.project.root}\/app\/.+\.rb|#{c.project.root}\/lib\/.+\.rb)/ix
-end
-
 require File.expand_path("../dummy/config/environment.rb",  __FILE__)
 require "rspec/rails"
 

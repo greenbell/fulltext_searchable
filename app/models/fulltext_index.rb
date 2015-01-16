@@ -86,22 +86,14 @@ class FulltextIndex < ActiveRecord::Base
         preload(:item).all(*args).map{|i| i.item }.compact
     end
     ##
-    # 特定レコードの更新をインデックスに非同期で反映する。
+    # 特定レコードの更新をインデックスに反映する。
     #
     def update(item)
-      l = lambda do
-        self.match(FulltextSearchable.to_item_keyword(item)).
-          includes(:item).all.each do |record|
-          next unless record.item
-          record.text = record.item.fulltext_keywords
-          record.save
-        end
-      end
-      if FulltextSearchable::Engine.config.respond_to?(:async) &&
-        FulltextSearchable::Engine.config.async
-        Thread.new{ l.call }
-      else
-        l.call
+      match(FulltextSearchable.to_item_keyword(item)).
+        includes(:item).all.each do |record|
+        next unless record.item
+        record.text = record.item.fulltext_keywords
+        record.save!
       end
     end
     ##
@@ -122,7 +114,7 @@ class FulltextIndex < ActiveRecord::Base
           rows = model.unscoped.includes(depends).offset(n).
             limit(FulltextSearchable::PROCESS_UNIT).order(:id).all
           rows.each do |r|
-            index = self.find_or_initialize_by_key(create_key(r))
+            index = where(:key => create_key(r)).first || new(:key => create_key(r))
             index.update_attributes :text => r.fulltext_keywords, :item => r
           end
           n += rows.count
@@ -151,6 +143,6 @@ class FulltextIndex < ActiveRecord::Base
   # 互換のためレコード作成時に主キーをセット。
   #
   def set_grn_insert_id
-    self.id = connection.execute('SELECT last_insert_grn_id();').to_a.first.first
+    self.id = self.class.connection.execute('SELECT last_insert_grn_id();').to_a.first.first
   end
 end

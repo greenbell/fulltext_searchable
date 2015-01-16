@@ -33,12 +33,12 @@ module FulltextSearchable
         self.fulltext_referenced_columns = Array.wrap(referenced) if referenced
         self.fulltext_keyword_proc = block
 
+        if ::ActiveRecord::VERSION::MAJOR >= 4
+          has_one :fulltext_index, ->(item) { where(:key => FulltextIndex.create_key(item)) }, :as => :item
+        else
+          has_one :fulltext_index, :conditions => proc{ {:key => FulltextIndex.create_key(self) } }, :as => :item
+        end
         class_eval <<-EOV
-        has_one :fulltext_index, {
-          :as => :item,
-          :conditions => proc{ {:key => FulltextIndex.create_key(self) } }
-        }
-
         include FulltextSearchable::ActiveRecord::Behaviors
 
         after_commit       :save_fulltext_index
@@ -161,7 +161,7 @@ module FulltextSearchable
       #
       def destroy_fulltext_index
         return unless fulltext_index
-        unless persisted?
+        if destroyed? && frozen?
           fulltext_index.destroy
         else
           fulltext_index.update_attributes(:text => '')
