@@ -115,6 +115,37 @@ describe FulltextIndex do
     end
   end
 
+  describe 'special chars matchings' do
+    before do
+      names = %w(
+        Asterisk
+        Asterisk*
+        テスト
+        テスト++
+        タマ
+        タマ(猫)
+        HELLO!!
+        "HELLO!!"
+        STRING
+        STRING\"\"
+        OR
+      )
+      names.each do |name|
+        FactoryGirl.create(:user, name: name, blogs: [])
+      end
+    end
+
+    it 'should work with special chars' do
+      expect(FulltextIndex.match('Asterisk*').size).to eq 1
+      expect(FulltextIndex.match('ト++').size).to eq 1
+      expect(FulltextIndex.match('タマ(猫)').size).to eq 1
+      expect(FulltextIndex.match('タマ(').size).to eq 1
+      expect(FulltextIndex.match('"HELLO!!"').size).to eq 1
+      expect(FulltextIndex.match('STRING\\"\\"').size).to eq 1
+      expect(FulltextIndex.match('OR').size).to eq 1
+    end
+  end
+
   context "optimization" do
     before do
       @taro = FactoryGirl.create(:taro)

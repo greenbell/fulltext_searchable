@@ -38,6 +38,10 @@ class FulltextIndex < ActiveRecord::Base
       phrase = phrase.split(/[\s　]/) if phrase.is_a? String
       phrase.map!{|word| word.gsub(BOOLEAN_META_CHARACTER_REGEXP, '')}
       phrase.reject!(&:blank?)
+      # escape special character
+      phrase.map! do |word|
+        '"' + word.gsub(/[\\"]/) { |c| "\\#{c}" } + '"'
+      end
 
       # モデルで絞り込む
       model_keywords = []
