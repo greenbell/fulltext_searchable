@@ -35,10 +35,9 @@ class FulltextIndex < ActiveRecord::Base
     #
     def match(phrase, options={})
       options = options.symbolize_keys
-      if phrase.is_a? String
-        phrase = phrase.split(/[\s　]/).reject{|word| word.blank? }
-      end
+      phrase = phrase.split(/[\s　]/) if phrase.is_a? String
       phrase.map!{|word| word.gsub(BOOLEAN_META_CHARACTER_REGEXP, '')}
+      phrase.reject!(&:blank?)
 
       # モデルで絞り込む
       model_keywords = []

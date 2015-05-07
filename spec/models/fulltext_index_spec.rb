@@ -35,6 +35,7 @@ describe FulltextIndex do
       @jiro   = FactoryGirl.create(:jiro)
       @hanako = FactoryGirl.create(:hanako, :name => 'hanako')
     end
+
     it "should fulltext searchable with '営業'" do
       FulltextIndex.match('営業').items.count.should == 4
     end
@@ -103,6 +104,14 @@ describe FulltextIndex do
       FulltextIndex.match('h').items.count.should == 1
       FulltextIndex.match('h', :model => User).items.count.should == 1
       FulltextIndex.match('h', :model => User, :with => @hanako).items.count.should == 1
+    end
+
+    it 'should not raise error searchable with only meta character string' do
+      expect {
+        expect(FulltextIndex.match('(').size).to eq 0
+        expect(FulltextIndex.match('++++++').size).to eq 0
+        expect(FulltextIndex.match(')+()()())---->*<').size).to eq 0
+      }.not_to raise_error
     end
   end
 
