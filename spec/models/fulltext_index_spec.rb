@@ -35,6 +35,7 @@ describe FulltextIndex do
       @jiro   = FactoryGirl.create(:jiro)
       @hanako = FactoryGirl.create(:hanako, :name => 'hanako')
     end
+
     it "should fulltext searchable with '営業'" do
       FulltextIndex.match('営業').items.count.should == 4
     end
@@ -103,6 +104,45 @@ describe FulltextIndex do
       FulltextIndex.match('h').items.count.should == 1
       FulltextIndex.match('h', :model => User).items.count.should == 1
       FulltextIndex.match('h', :model => User, :with => @hanako).items.count.should == 1
+    end
+
+    it 'should not raise error searchable with only meta character string' do
+      expect {
+        expect(FulltextIndex.match('(').size).to eq 0
+        expect(FulltextIndex.match('++++++').size).to eq 0
+        expect(FulltextIndex.match(')+()()())---->*<').size).to eq 0
+      }.not_to raise_error
+    end
+  end
+
+  describe 'special chars matchings' do
+    before do
+      names = %w(
+        Asterisk
+        Asterisk*
+        テスト
+        テスト++
+        タマ
+        タマ(猫)
+        HELLO!!
+        "HELLO!!"
+        STRING
+        STRING\"\"
+        OR
+      )
+      names.each do |name|
+        FactoryGirl.create(:user, name: name, blogs: [])
+      end
+    end
+
+    it 'should work with special chars' do
+      expect(FulltextIndex.match('Asterisk*').size).to eq 1
+      expect(FulltextIndex.match('ト++').size).to eq 1
+      expect(FulltextIndex.match('タマ(猫)').size).to eq 1
+      expect(FulltextIndex.match('タマ(').size).to eq 1
+      expect(FulltextIndex.match('"HELLO!!"').size).to eq 1
+      expect(FulltextIndex.match('STRING\\"\\"').size).to eq 1
+      expect(FulltextIndex.match('OR').size).to eq 1
     end
   end
 
