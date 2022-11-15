@@ -14,8 +14,13 @@ elsif ENV['RAILS_VER'] == '3.2'
   else
     gem 'rails3_acts_as_paranoid', :git => 'git://github.com/greenbell/rails3_acts_as_paranoid.git'
   end
-else
+elsif ENV['RAILS_VER'] == '4.0'
   gem "rails", "~> 4.0"
+  gem "mysql2"
+  gem 'will_paginate'
+  gem 'acts_as_paranoid', github: 'ActsAsParanoid/acts_as_paranoid'
+else
+  gem "rails", "~> 7.0"
   gem "mysql2"
   gem 'will_paginate'
   gem 'acts_as_paranoid', github: 'ActsAsParanoid/acts_as_paranoid'
