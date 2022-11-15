@@ -17,7 +17,8 @@ class FulltextIndex < ActiveRecord::Base
   belongs_to :item, :polymorphic => true
 
   class << self
-    cattr_accessor :target_models
+    #使ってるこれ？
+    #cattr_accessor :target_models
 
     ##
     # 全文検索で絞り込む。
@@ -74,7 +75,7 @@ class FulltextIndex < ActiveRecord::Base
 
       if connection.mroonga_match_against?
         where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
-          order(sanitize_sql_array(["MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')]))
+          order(Arel.sql(sanitize_sql_array(["MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')])))
       else
         where("MATCH(`text`) AGAINST(? IN BOOLEAN MODE)",phrase.join(' ')).
           order('`_score` DESC')
