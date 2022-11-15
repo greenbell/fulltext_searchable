@@ -45,6 +45,7 @@ ActiveSupport.on_load(:active_record) do
         table_without_grn(table, stream)
       end
     end
-    alias_method_chain :table, :grn
+    #alias_method_chain :table, :grn
+    alias_method :table, :table_with_grn
   end
 end
