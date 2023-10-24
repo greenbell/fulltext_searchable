@@ -6,7 +6,7 @@ require 'digest/md5'
 # == 概要
 # 全文検索インデックスとして機能するモデル。
 #
-class FulltextIndex < ActiveRecord::Base
+class FulltextIndex < ApplicationRecord
   BOOLEAN_META_CHARACTER_REGEXP = /^[\+\-><\(\)~*"]*/
   self.table_name = FulltextSearchable::TABLE_NAME
   self.primary_key = :_id
