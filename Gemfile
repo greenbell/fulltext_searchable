@@ -20,7 +20,7 @@ elsif ENV['RAILS_VER'] == '4.0'
   gem 'will_paginate'
   gem 'acts_as_paranoid', github: 'ActsAsParanoid/acts_as_paranoid'
 else
-  gem "rails", "~> 7.0"
+  gem "rails", "~> 7.1.1"
   gem "mysql2"
   gem 'will_paginate'
   gem 'acts_as_paranoid', github: 'ActsAsParanoid/acts_as_paranoid'
